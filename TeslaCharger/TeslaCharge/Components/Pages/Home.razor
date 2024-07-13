@@ -1,0 +1,24 @@
+﻿@page "/"
+@using MudBlazor
+@inherits MudComponentBase
+<PageTitle>Tesla Charger</PageTitle>
+
+<MudGrid>
+    <MudItem xs="12">
+        <MudCard >
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Basic Parameters</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudText>Active Power: @ActivePower W</MudText>
+                <MudText>Tesla Battery Level: @TeslaData.BatteryLevel %</MudText>
+                <MudText>Tesla State: @TeslaData.State</MudText>
+                <MudText>Tesla Plugged-In: @TeslaData.PluggedIn</MudText>
+                <MudText>Tesla Charge Limit: @TeslaData.ChargeLimitSoc %</MudText>
+                <MudText>Tesla Current State: @CurrentState</MudText>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>
