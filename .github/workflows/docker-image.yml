@@ -28,4 +28,5 @@ jobs:
         with:
           context: .
           file: server.Dockerfile
-          tags: $(date +%s)
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
