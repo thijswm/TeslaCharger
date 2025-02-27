@@ -15,7 +15,7 @@ jobs:
         uses: docker/login-action@v3.3.0
         with:
           username: thijswm
-          password: piet
+          password: ${{ Docker.DOCKER_TOKEN }}
       - 
         name: Checkout the repo
         uses: actions/checkout@v4
