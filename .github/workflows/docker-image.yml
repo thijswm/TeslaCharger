@@ -15,4 +15,4 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build the Server Docker image
-      run: docker build . --file SolarCharger\server.Dockerfile --tag thijswm/tesla_solar_charger:$(date +%s)
+      run: docker build . --file SolarCharger/server.Dockerfile --tag thijswm/tesla_solar_charger:$(date +%s)
