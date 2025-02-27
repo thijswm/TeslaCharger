@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ "main" ]
 
+defaults:
+  run:
+     working-directory: ./SolarCharger
+
 jobs:
 
   build:
@@ -15,4 +19,4 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build the Server Docker image
-      run: docker build . --file SolarCharger/server.Dockerfile --tag thijswm/tesla_solar_charger:$(date +%s)
+      run: docker build . --file server.Dockerfile --tag thijswm/tesla_solar_charger:$(date +%s)
