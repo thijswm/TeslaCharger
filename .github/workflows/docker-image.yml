@@ -12,13 +12,18 @@ jobs:
     steps:
       -
         name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v3.3.0
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
       - 
         name: Checkout the repo
-        uses: actions/checkout@v4      
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          install: true
       -
         name: Extract metadata (tags, labels) for Docker
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
@@ -26,7 +31,7 @@ jobs:
           images: thijswm/tesla_solar_charger
       -
         name: Build docker image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v6.12.0
         with:
           context: ./SolarCharger
           file: ./SolarCharger/server.Dockerfile
