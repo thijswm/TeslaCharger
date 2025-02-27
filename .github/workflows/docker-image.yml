@@ -23,6 +23,6 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ./SolarCharger
-          file: server.Dockerfile
+          file: ./SolarCharger/server.Dockerfile
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
