@@ -20,9 +20,9 @@ jobs:
           images: thijswm/tesla_solar_charger
       -
         name: Build docker image
-        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+        uses: docker/build-push-action@v2
         with:
-          context: SolarCharger
+          context: ./SolarCharger
           file: server.Dockerfile
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
