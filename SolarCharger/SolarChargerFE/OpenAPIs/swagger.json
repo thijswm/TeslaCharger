@@ -1,0 +1,517 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "SolarCharger",
+    "version": "v1"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000"
+    }
+  ],
+  "paths": {
+    "/api/get_state": {
+      "get": {
+        "tags": [
+          "Solar"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/StateViewModel"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StateViewModel"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StateViewModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/start_charge": {
+      "post": {
+        "tags": [
+          "Solar"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stop_charge": {
+      "post": {
+        "tags": [
+          "Solar"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/update_settings": {
+      "post": {
+        "tags": [
+          "Solar"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SettingsViewModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SettingsViewModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SettingsViewModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/get_settings": {
+      "get": {
+        "tags": [
+          "Solar"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsViewModel"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsViewModel"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsViewModel"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/get_charge_sessions": {
+      "get": {
+        "tags": [
+          "Solar"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChargeSessionViewModel"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChargeSessionViewModel"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChargeSessionViewModel"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/get_charge_current_changes": {
+      "get": {
+        "tags": [
+          "Solar"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChargeCurrentChangeViewModel"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChargeCurrentChangeViewModel"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChargeCurrentChangeViewModel"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ChargeCurrentChangeViewModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "chargeSessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "current": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ChargeSessionViewModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "batteryLevelStarted": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "batteryLevelEnded": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "energyAdded": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SettingsViewModel": {
+        "required": [
+          "enabled",
+          "enoughSolarWatt",
+          "homeWizardAddress",
+          "maximumAmp",
+          "minimumAmp",
+          "minimumChargeDuration",
+          "minimumCurrentDuration",
+          "minimumInitialChargeDuration",
+          "numberOfPhases",
+          "pollTime",
+          "solarMovingAverage",
+          "teslaClientId",
+          "teslaCommandsAddress",
+          "teslaFleetAddress",
+          "teslaRefreshToken",
+          "vin"
+        ],
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "homeWizardAddress": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "solarMovingAverage": {
+            "type": "string",
+            "format": "date-span"
+          },
+          "enoughSolarWatt": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "minimumAmp": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "maximumAmp": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "numberOfPhases": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "minimumChargeDuration": {
+            "type": "string",
+            "format": "date-span"
+          },
+          "minimumCurrentDuration": {
+            "type": "string",
+            "format": "date-span"
+          },
+          "teslaFleetAddress": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "teslaCommandsAddress": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "teslaRefreshToken": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "teslaClientId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "vin": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "pollTime": {
+            "type": "string",
+            "format": "date-span"
+          },
+          "minimumInitialChargeDuration": {
+            "type": "string",
+            "format": "date-span"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StateViewModel": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/eState"
+          }
+        },
+        "additionalProperties": false
+      },
+      "eState": {
+        "enum": [
+          "Idle",
+          "Starting",
+          "IsTeslaOnline",
+          "TeslaOnline",
+          "CheckSolarPower",
+          "EnoughSolarPower",
+          "StartCharge",
+          "InitialCharging",
+          "InitialChargeDurationReached",
+          "MonitoringCharge",
+          "MonitoringChargeDurationReached",
+          "StopCharge"
+        ],
+        "type": "string"
+      }
+    }
+  }
+}

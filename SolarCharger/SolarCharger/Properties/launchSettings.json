@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SolarCharger": {
+      "commandName": "Project",
+      "applicationUrl": "http://localhost:8080/"
+    }
+  }
+}

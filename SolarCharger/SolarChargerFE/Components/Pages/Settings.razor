@@ -1,0 +1,84 @@
+﻿@page "/Settings"
+@inherits MudComponentBase
+<PageTitle>Settings</PageTitle>
+
+@if (_loading)
+{
+    <MudSkeleton />
+}
+else
+{
+    <MudGrid>
+        <MudItem xs="12">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Settings</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                @if (!string.IsNullOrEmpty(_loadError))
+                {
+                    <MudAlert Severity="Severity.Error">@_loadError</MudAlert>
+                }
+                else
+                {
+                    <MudGrid>
+                        <MudItem xs="12">
+                            <MudCheckBox @bind-Value="_settings.Enabled" Label="Enabled" />
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudTextField Required="true" @bind-Value="_settings.HomeWizardAddress" Variant="Variant.Outlined" Label="HomeWizard Address" />
+                        </MudItem>
+                        <MudItem xs="3">
+                            <MudNumericField Variant="Variant.Outlined" @bind-Value="PollTime" Label="Power Polling Time Seconds" Min="0" Step="1" />
+                        </MudItem>
+                        <MudItem xs="12" />
+                        <MudItem xs="6">
+                            <MudTextField Required="true" @bind-Value="_settings.TeslaFleetAddress" Variant="Variant.Outlined" Label="Tesla Fleet Address" />
+                        </MudItem>
+                        <MudItem xs="12" />
+                        <MudItem xs="6">
+                            <MudTextField Required="true" @bind-Value="_settings.TeslaCommandsAddress" Variant="Variant.Outlined" Label="Tesla Commands Address" />
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudTextField Required="true" @bind-Value="_settings.TeslaRefreshToken" Variant="Variant.Outlined" Label="Tesla Refresh Token" />
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudTextField Required="true" @bind-Value="_settings.TeslaClientId" Variant="Variant.Outlined" Label="Tesla Client Id" />
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudTextField Required="true" @bind-Value="_settings.Vin" Variant="Variant.Outlined" Label="Tesla VIN" />
+                        </MudItem>
+                        <MudItem xs="3">
+                            <MudTimePicker Variant="Variant.Outlined" @bind-Time="SolarMovingAverage" Label="Duration we need enough solar production (minutes)" OpenTo="OpenTo.Minutes" />
+                        </MudItem>
+                        <MudItem xs="3">
+                            <MudTimePicker Variant="Variant.Outlined" @bind-Time="MinimumChargeDuration" Label="Minimum charing session time (minutes)" OpenTo="OpenTo.Minutes" />
+                        </MudItem>
+                        <MudItem xs="12" />
+                        <MudItem xs="3">
+                            <MudTimePicker Variant="Variant.Outlined" @bind-Time="MinimumCurrentDuration" Label="Minimum current time (minutes)" OpenTo="OpenTo.Minutes" />
+                        </MudItem>
+                        <MudItem xs="3">
+                            <MudTimePicker Variant="Variant.Outlined" @bind-Time="MinimumInitialChargeDuration" Label="Minimum initial charge duration (minutes)" OpenTo="OpenTo.Minutes" />
+                        </MudItem>
+                        <MudItem xs="12" />
+                        <MudItem xs="3">
+                            <MudNumericField @bind-Value="_settings.MinimumAmp" Label="Minimum Current Car supports" Min="1" Max="32" Step="1" Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="3">
+                            <MudNumericField @bind-Value="_settings.MaximumAmp" Label="Maximum Current Car supports" Min="1" Max="32" Step="1" Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="3">
+                            <MudNumericField @bind-Value="_settings.NumberOfPhases" Label="Default number of phases" Min="1" Max="3" Step="1" Variant="Variant.Outlined" />
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudButton Variant="Variant.Filled" Color="@Color.Primary" OnClick="SaveSettingsAsync">Save</MudButton>
+                        </MudItem>
+                    </MudGrid>
+                }
+            </MudCardContent>
+        </MudItem>
+    </MudGrid>
+}
