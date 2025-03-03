@@ -12,4 +12,5 @@ jobs:
         run: docker build -f ./SolarCharger/server.Dockerfile -t thijswm/tesla_solar_charger:latest ./SolarCharger/
       - name: push image
         run: |
-          docker push hijswm/tesla_solar_charger:latest
+          docker login -u ${{secrets.DOCKER_USERNAME }} -p ${{secrets.DOCKER_TOKEN }}
+          docker push thijswm/tesla_solar_charger:latest
