@@ -1,0 +1,19 @@
+name: Build and Push docker iamge
+on:
+  workflow_dispatch
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    environment: docker_environment
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v4
+      - name: Build docker image
+        run: |
+          docker build -f ./SolarCharger/server.Dockerfile -t thijswm/tesla_solar_charger:latest ./SolarCharger/
+          docker build -f ./SolarCharger/client.Dockerfile -t thijswm/tesla_solar_charger_client:latest ./SolarCharger
+      - name: push image
+        run: |
+          docker login -u thijswm -p ${{ secrets.DOCKER_TOKEN }}
+          docker push thijswm/tesla_solar_charger:latest
+          docker push thijswm/tesla_solar_charger_client:latest
