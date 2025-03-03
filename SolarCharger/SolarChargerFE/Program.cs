@@ -31,6 +31,7 @@ namespace SolarChargerFE
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
 
+            builder.Services.AddScoped<HttpClient>();
             builder.Services.AddScoped(a =>
             {
                 var httpClient = a.GetService(typeof(HttpClient)) as HttpClient;
