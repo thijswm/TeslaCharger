@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SolarCharger.Controllers.ViewModels;
 using SolarCharger.Services;
+using SolarCharger.Services.ViewModels;
 
 namespace SolarCharger.Controllers
 {
@@ -141,6 +142,20 @@ namespace SolarCharger.Controllers
             {
                 return BadRequest($"Failed to get charge current changes, Error: '{ex.Message}'");
             }
+        }
+
+        [HttpGet]
+        [Route("api/get_latest_vehicle_data")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StreamVehicleData))]
+        public IActionResult GetLatestVehicleData()
+        {
+            var latestVehicleData = _stateEngine.LatestVehicleData;
+            if (latestVehicleData != null)
+            {
+                return Ok(StreamVehicleData.FromModel(latestVehicleData));
+            }
+
+            return Ok(new StreamVehicleData());
         }
     }
 }

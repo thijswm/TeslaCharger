@@ -3,7 +3,7 @@
 <PageTitle>Main</PageTitle>
 @if (_loading)
 {
-    <MudSkeleton />
+    <MudSkeleton Width="200px" Height="200px" />
 }
 else if (!string.IsNullOrEmpty(_loadError))
 {
@@ -18,11 +18,71 @@ else
         <MudItem xs="12">
             @if (_currentState == EState.Idle)
             {
-                <MudButton Color="@Color.Primary"  Variant="Variant.Filled" OnClick="StartChargingAsync">Start Charge Session</MudButton>
+                <MudButton Color="@Color.Primary" Variant="Variant.Filled" OnClick="StartChargingAsync">Start Charge Session</MudButton>
             }
             else
             {
-                <MudButton Color="@Color.Primary" Variant="Variant.Filled" OnClick="StopChargingAsync">Stop Charge Session</MudButton>
+                <MudGrid>
+                    <MudItem xs="12">
+                        <MudButton Color="@Color.Primary" Variant="Variant.Filled" OnClick="StopChargingAsync">Stop Charge Session</MudButton>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h5">Charging...</MudText>
+                    </MudItem>
+                    @if (_currentVehicleData != null)
+                    {
+                        <MudItem xs="4">
+                            <MudCard>
+                                <MudCardHeader>
+                                    <CardHeaderContent>
+                                        <MudText Typo="Typo.h5">Power</MudText>
+                                    </CardHeaderContent>
+                                </MudCardHeader>
+                                <MudCardContent>
+                                    <MudStack Row="true">
+                                        <MudText Typo="Typo.h6">@(_currentVehicleData.ChargerPower) kW</MudText>
+                                        <MudIcon Icon="@Icons.Material.Filled.FlashOn"></MudIcon>
+                                    </MudStack>
+                                </MudCardContent>
+                            </MudCard>
+                        </MudItem>
+
+                        <MudItem xs="4">
+                            <MudCard>
+                                <MudCardHeader>
+                                    <CardHeaderContent>
+                                        <MudText Typo="Typo.h5">Energy Added</MudText>
+                                    </CardHeaderContent>
+                                </MudCardHeader>
+                                <MudCardContent>
+                                    <MudText Typo="Typo.h6">@(_currentVehicleData.ChargeEnergyAdded) kWh</MudText>
+                                </MudCardContent>
+                            </MudCard>
+                        </MudItem>
+
+                        <MudItem xs="4">
+                            <MudCard>
+                                <MudCardHeader>
+                                    <CardHeaderContent>
+                                        <MudText Typo="Typo.h5">Current Energy</MudText>
+                                    </CardHeaderContent>
+                                </MudCardHeader>
+                                <MudCardContent>
+                                    <MudStack>
+                                        <MudText Typo="Typo.h6">@(_currentVehicleData.ChargeAmps) A / @(_currentVehicleData.ChargeCurrentRequestMax) A</MudText>
+                                        <MudText Typo="Typo.h6">@(_currentVehicleData.ChargerVoltage) V</MudText>
+                                    </MudStack>
+                                </MudCardContent>
+                            </MudCard>
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudProgressLinear Color="Color.Tertiary" Value="@(_currentVehicleData!.BatteryLevel)" Size="Size.Large" Striped="true">
+                                <MudText Typo="Typo.h6">@_currentVehicleData!.BatteryLevel</MudText>
+                            </MudProgressLinear>
+                        </MudItem>
+                    }
+                </MudGrid>
             }
         </MudItem>
     </MudGrid>

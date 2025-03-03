@@ -2,26 +2,24 @@
 using Microsoft.Extensions.Logging;
 using SolarCharger.Controllers;
 using SolarCharger.Controllers.ViewModels;
+using SolarCharger.Services.Objects;
+using SolarCharger.Services.ViewModels;
 
 namespace SolarCharger.Services
 {
-    public class HubService : IHubService
+    public class HubService(IHubContext<SolarHub> solarHub, ILogger<HubService> log) : IHubService
     {
-        private readonly ILogger<HubService> _log;
-
-        private readonly IHubContext<SolarHub> _solarHub;
-
-        public HubService(IHubContext<SolarHub> solarHub, ILogger<HubService> log)
-        {
-            _solarHub = solarHub;
-            _log = log;
-        }
-
         public async Task SendStateChangedAsync(eState state)
         {
-            _log.LogInformation("Sending GUI update with state: '{State}'", state);
+            log.LogInformation("Sending GUI update with state: '{State}'", state);
             var stateViewModel = StateViewModel.FromState(state);
-            await _solarHub.Clients.All.SendAsync("StateChanged", stateViewModel);
+            await solarHub.Clients.All.SendAsync("StateChanged", stateViewModel);
+        }
+
+        public Task SendVehicleDataAsync(VehicleData data)
+        {
+            var vehicleDataViewModel = StreamVehicleData.FromModel(data);
+            return solarHub.Clients.All.SendAsync("VehicleData", vehicleDataViewModel);
         }
     }
 }

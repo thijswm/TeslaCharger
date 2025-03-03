@@ -1,8 +1,5 @@
-﻿using System.Runtime.CompilerServices;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SolarCharger.Controllers;
 using SolarCharger.EF;
 using SolarCharger.Services;
 using SolarCharger.Services.Objects;
@@ -121,6 +118,8 @@ namespace SolarCharger
             set => _state = value;
         }
 
+        public VehicleData? LatestVehicleData { get; private set; }
+
         private async void StateTransitioned(StateMachine<eState, eTrigger>.Transition transition)
         {
             _log.LogDebug(
@@ -219,10 +218,12 @@ namespace SolarCharger
                 try
                 {
                     _log.LogInformation("Getting vehicle data");
-                    var vehicleData = await _tesla.GetVehicleDataAsync();
-                    _log.LogInformation("Vehicle data: {Data}", vehicleData);
+                    LatestVehicleData = await _tesla.GetVehicleDataAsync();
+                    _log.LogInformation("Vehicle data: {Data}", LatestVehicleData);
 
-                    if (vehicleData.ChargeState is { IsChargePortLatched: true })
+                    await _hubService.SendVehicleDataAsync(LatestVehicleData);
+
+                    if (LatestVehicleData.ChargeState is { IsChargePortLatched: true })
                     {
                         await _stateMachine.FireAsync(eTrigger.TeslaCanCharge);
                         return;
@@ -490,8 +491,10 @@ namespace SolarCharger
             try
             {
                 // this will also update the vehicle charge power
-                var vehicleData = await _tesla.GetVehicleDataAsync();
-                _log.LogInformation("Vehicle data: {Data}", vehicleData);
+                LatestVehicleData = await _tesla.GetVehicleDataAsync();
+                _log.LogInformation("Vehicle data: {Data}", LatestVehicleData);
+
+                await _hubService.SendVehicleDataAsync(LatestVehicleData);
             }
             catch (Exception ex)
             {
@@ -570,11 +573,10 @@ namespace SolarCharger
         {
             // we always get the vehicle data now to get the correct power
             // and check for the battery level
-            VehicleData? vehicleData;
             try
             {
-                vehicleData = await _tesla.GetVehicleDataAsync();
-                _log.LogInformation("Vehicle data: {VehicleData}", vehicleData);
+                LatestVehicleData = await _tesla.GetVehicleDataAsync();
+                _log.LogInformation("Vehicle data: {VehicleData}", LatestVehicleData);
             }
             catch (Exception exp)
             {
@@ -583,10 +585,11 @@ namespace SolarCharger
                 return;
             }
 
+            await _hubService.SendVehicleDataAsync(LatestVehicleData);
 
             // we check if we reached the battery level
             // if so, we can stop charging already
-            if (_tesla.CurrentBatteryLevel >= vehicleData.ChargeState?.ChargeLimitSoc)
+            if (_tesla.CurrentBatteryLevel >= LatestVehicleData.ChargeState?.ChargeLimitSoc)
             {
                 _log.LogInformation("Battery level: {Level} reached, stopping charge", _tesla.CurrentBatteryLevel);
                 await _stateMachine.FireAsync(eTrigger.StopCharge);
@@ -685,10 +688,12 @@ namespace SolarCharger
             {
                 if (_currentChargeSession != null)
                 {
-                    _ = await _tesla.GetVehicleDataAsync();
+                    LatestVehicleData = await _tesla.GetVehicleDataAsync();
                     _currentChargeSession.End = DateTime.Now;
                     _currentChargeSession.BatteryLevelEnded = _tesla.CurrentBatteryLevel;
                     await _chargeSessionService.UpdateChargeSessionAsync(_currentChargeSession);
+
+                    await _hubService.SendVehicleDataAsync(LatestVehicleData);
                 }
             }
             catch (Exception exp)

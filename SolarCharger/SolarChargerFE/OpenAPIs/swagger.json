@@ -6,7 +6,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:5000"
+      "url": "http://localhost:8080"
     }
   ],
   "paths": {
@@ -341,6 +341,35 @@
           }
         }
       }
+    },
+    "/api/get_latest_vehicle_data": {
+      "get": {
+        "tags": [
+          "Solar"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/StreamVehicleData"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StreamVehicleData"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StreamVehicleData"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -491,6 +520,48 @@
         "properties": {
           "state": {
             "$ref": "#/components/schemas/eState"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StreamVehicleData": {
+        "type": "object",
+        "properties": {
+          "batteryLevel": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "chargeAmps": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "chargeCurrentRequest": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "chargeCurrentRequestMax": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "chargePortLatch": {
+            "type": "string",
+            "nullable": true
+          },
+          "chargerPower": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "chargerVoltage": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "chargeEnergyAdded": {
+            "type": "number",
+            "format": "double"
+          },
+          "chargeLimitSoc": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false

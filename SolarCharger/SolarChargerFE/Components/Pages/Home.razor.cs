@@ -13,6 +13,7 @@ namespace SolarChargerFE.Components.Pages
         private string _loadError;
         private EState _currentState;
 
+        private StreamVehicleData? _currentVehicleData;
 
         protected override async Task OnInitializedAsync()
         {
@@ -27,6 +28,17 @@ namespace SolarChargerFE.Components.Pages
                     _currentState = message.State;
                     InvokeAsync(StateHasChanged);
                 });
+
+                _hubConnection.On<StreamVehicleData>("VehicleData", (vehicleData) =>
+                {
+                    _currentVehicleData = vehicleData;
+                    InvokeAsync(StateHasChanged);
+                });
+
+                _currentVehicleData = new StreamVehicleData
+                {
+                    BatteryLevel = 30
+                };
 
                 if (_hubConnection.State == HubConnectionState.Disconnected)
                 {
