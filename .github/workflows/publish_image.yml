@@ -1,6 +1,11 @@
 name: Build and Push docker iamge
 on:
-  workflow_dispatch
+  workflow_dispatch:
+    inputs:
+      tag:
+        type: string
+        required: true
+        description: 'Docker tag'
 jobs:
   docker:
     runs-on: ubuntu-latest
@@ -10,10 +15,10 @@ jobs:
         uses: actions/checkout@v4
       - name: Build docker image
         run: |
-          docker build -f ./SolarCharger/server.Dockerfile -t thijswm/tesla_solar_charger:latest ./SolarCharger/
-          docker build -f ./SolarCharger/client.Dockerfile -t thijswm/tesla_solar_charger_client:latest ./SolarCharger
+          docker build -f ./SolarCharger/server.Dockerfile -t thijswm/tesla_solar_charger:${{ inputs.tag }} ./SolarCharger/
+          docker build -f ./SolarCharger/client.Dockerfile -t thijswm/tesla_solar_charger_client:${{ inputs.tag }} ./SolarCharger
       - name: push image
         run: |
           docker login -u thijswm -p ${{ secrets.DOCKER_TOKEN }}
-          docker push thijswm/tesla_solar_charger:latest
-          docker push thijswm/tesla_solar_charger_client:latest
+          docker push thijswm/tesla_solar_charger:${{ inputs.tag }}
+          docker push thijswm/tesla_solar_charger_client:${{ inputs.tag }}
