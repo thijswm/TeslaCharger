@@ -31,9 +31,14 @@ namespace SolarChargerFE
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
 
-            builder.Services.AddHttpClient<SolarChargerClient>(client =>
+            builder.Services.AddScoped(a =>
             {
-                client.BaseAddress = new Uri(apiAddress);
+                var httpClient = a.GetService(typeof(HttpClient)) as HttpClient;
+                httpClient!.DefaultRequestHeaders.ConnectionClose = true;
+                return new SolarChargerClient(httpClient)
+                {
+                    BaseUrl = apiAddress
+                };
             });
 
             builder.Services.AddSingleton(provider =>
