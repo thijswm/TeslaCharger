@@ -10,3 +10,6 @@ jobs:
         uses: actions/checkout@v4
       - name: Build docker image
         run: docker build ./SolarCharger -f server.Dockerfile thijswm/tesla_solar_charger:latest
+      - name: push image
+        run: |
+          docker push hijswm/tesla_solar_charger:latest
