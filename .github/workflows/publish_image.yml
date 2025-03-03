@@ -5,7 +5,7 @@ on:
 jobs:
   docker:
     runs-on: ubuntu-latest
-    environment: Docker
+    environment: docker_environment
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v4
@@ -13,5 +13,5 @@ jobs:
         run: docker build -f ./SolarCharger/server.Dockerfile -t thijswm/tesla_solar_charger:latest ./SolarCharger/
       - name: push image
         run: |
-          docker login -u ${{secrets.DOCKER_USERNAME }} -p ${{secrets.DOCKER_TOKEN }}
+          docker login -u thijswm -p ${{ secrets.DOCKER_TOKEN }}
           docker push thijswm/tesla_solar_charger:latest
