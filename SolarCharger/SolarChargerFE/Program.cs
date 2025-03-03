@@ -9,7 +9,7 @@ namespace SolarChargerFE
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            var apiAddress = Environment.GetEnvironmentVariable("ApiAddress") ?? "http://nas:6808/";
+            var apiAddress = Environment.GetEnvironmentVariable("ApiAddress") ?? "http://server:8080/";
 
             Uri? hubAddress = null;
             if (Uri.TryCreate(apiAddress, UriKind.Absolute, out var uri))
