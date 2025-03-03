@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using MudBlazor;
+using static MudBlazor.CategoryTypes;
+using System;
 
 namespace SolarChargerFE.Components.Pages
 {
@@ -12,8 +14,10 @@ namespace SolarChargerFE.Components.Pages
         private bool _loading;
         private string _loadError;
         private EState _currentState;
-
         private StreamVehicleData? _currentVehicleData;
+        private List<TimeSeriesChartSeries> _powerChart = new();
+        private TimeSeriesChartSeries _powerSeries = new();
+        private TimeSeriesChartSeries _compensatedPowerSeries = new();
 
         protected override async Task OnInitializedAsync()
         {
@@ -35,10 +39,35 @@ namespace SolarChargerFE.Components.Pages
                     InvokeAsync(StateHasChanged);
                 });
 
-                _currentVehicleData = new StreamVehicleData
+                _powerSeries = new TimeSeriesChartSeries
                 {
-                    BatteryLevel = 30
+                    Index = 0,
+                    Name = "Power",
+                    IsVisible = true,
+                    Type = TimeSeriesDisplayType.Line
                 };
+
+                _compensatedPowerSeries = new TimeSeriesChartSeries
+                {
+                    Index = 0,
+                    Name = "Compensated Power",
+                    IsVisible = true,
+                    Type = TimeSeriesDisplayType.Line
+                };
+
+                _powerChart.Add(_powerSeries);
+                _powerChart.Add(_compensatedPowerSeries);
+
+                _hubConnection.On<List<PowerHistory>>("PowerHistory", (history) =>
+                {
+                    _powerSeries.Data = history
+                        .Select(a => new TimeSeriesChartSeries.TimeValue(a.Time.LocalDateTime, a.Power)).ToList();
+
+                    _compensatedPowerSeries.Data = history
+                        .Where(a => a.CompensatedPower.HasValue)
+                        .Select(a => new TimeSeriesChartSeries.TimeValue(a.Time.LocalDateTime, a.CompensatedPower!.Value)).ToList();
+                    InvokeAsync(StateHasChanged);
+                });
 
                 if (_hubConnection.State == HubConnectionState.Disconnected)
                 {

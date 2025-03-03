@@ -21,5 +21,13 @@ namespace SolarCharger.Services
             var vehicleDataViewModel = StreamVehicleData.FromModel(data);
             return solarHub.Clients.All.SendAsync("VehicleData", vehicleDataViewModel);
         }
+
+        public Task SendLatestPowerHistoryAsync(List<PowerHistory> powerHistory)
+        {
+            var powerHistoryViewModel = powerHistory
+                .OrderBy(a => a.Time)
+                .Select(PowerHistoryViewModel.FromModel).ToList();
+            return solarHub.Clients.All.SendAsync("PowerHistory", powerHistoryViewModel);
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Runtime.CompilerServices;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SolarCharger.EF;
 using SolarCharger.Services;
@@ -15,6 +16,8 @@ namespace SolarCharger
     }
 
 
+
+
     public class StateEngine : IStateEngine
     {
         private readonly ILogger<StateEngine> _log;
@@ -28,6 +31,7 @@ namespace SolarCharger
         private Settings? _settings;
         private readonly List<KeyValuePair<DateTime, int>> _powerHistory = new();
         private readonly List<KeyValuePair<DateTime, int>> _compensatedHistory = new();
+        private readonly List<PowerHistory> _totalPowerHistory = new();
         private int _numPhases = 3;
         private DateTime _lastChargeStart = DateTime.MinValue;
         private DateTime _lastChargeMonitoringStart = DateTime.MinValue;
@@ -120,6 +124,11 @@ namespace SolarCharger
 
         public VehicleData? LatestVehicleData { get; private set; }
 
+        public List<PowerHistory> GetPowerHistory()
+        {
+            return _totalPowerHistory;
+        }
+
         private async void StateTransitioned(StateMachine<eState, eTrigger>.Transition transition)
         {
             _log.LogDebug(
@@ -127,6 +136,33 @@ namespace SolarCharger
                 transition.Source, transition.Destination);
 
             await _hubService.SendStateChangedAsync(transition.Destination);
+        }
+
+        private async Task AddPowerAsync(int power, int? compensatedPower)
+        {
+            var powerHistory = new PowerHistory
+            {
+                Time = DateTime.Now,
+                Power = power,
+                CompensatedPower = compensatedPower,
+            };
+
+            _totalPowerHistory.Add(powerHistory);
+
+            if (_currentChargeSession != null)
+            {
+                await _chargeSessionService.AddPowerHistoryAsync(new ChargePower
+                {
+                    Id = Guid.NewGuid(),
+                    ChargeSessionId = _currentChargeSession.Id,
+                    ChargeSession = _currentChargeSession,
+                    Timestamp = powerHistory.Time,
+                    Power = power,
+                    CompensatedPower = compensatedPower
+                });
+
+                await _hubService.SendLatestPowerHistoryAsync(_totalPowerHistory);
+            }
         }
 
         public async Task FireStartAsync()
@@ -151,6 +187,7 @@ namespace SolarCharger
 
             _powerHistory.Clear();
             _compensatedHistory.Clear();
+            _totalPowerHistory.Clear();
 
             // do some startup check stuff
             // for now skip
@@ -236,6 +273,7 @@ namespace SolarCharger
 
                 _powerHistory.Clear();
                 _compensatedHistory.Clear();
+                _totalPowerHistory.Clear();
 
                 _log.LogDebug("Waiting for {Seconds} sec.", _settings!.PollTime.TotalSeconds);
                 await Task.Delay(_settings.PollTime);
@@ -262,6 +300,8 @@ namespace SolarCharger
                     _powerHistory.Add(
                         new KeyValuePair<DateTime, int>(DateTime.Now, currentPower));
                     validPower = true;
+
+                    await AddPowerAsync(currentPower, null);
                 }
                 catch (Exception ex)
                 {
@@ -455,6 +495,8 @@ namespace SolarCharger
 
                     _powerHistory.Add(
                         new KeyValuePair<DateTime, int>(DateTime.Now, currentPower));
+
+                    await AddPowerAsync(currentPower, null);
                     validPower = true;
                 }
                 catch (Exception ex)
@@ -509,6 +551,7 @@ namespace SolarCharger
             // clear the history
             _powerHistory.Clear();
             _compensatedHistory.Clear();
+            _totalPowerHistory.Clear();
 
             // now we can monitor the charge
             _log.LogDebug("Waiting for {Seconds} sec.", _settings!.PollTime.TotalSeconds);
@@ -535,6 +578,8 @@ namespace SolarCharger
 
                     _compensatedHistory.Add(
                         new KeyValuePair<DateTime, int>(DateTime.Now, compensatedPower));
+
+                    await AddPowerAsync(currentPower, compensatedPower);
                     validPower = true;
                 }
                 catch (Exception ex)

@@ -12,6 +12,7 @@ namespace SolarCharger.EF
         public virtual DbSet<Settings> Settings { get; set; }
         public virtual DbSet<ChargeSession> ChargeSessions { get; set; }
         public virtual DbSet<ChargeCurrentChange> ChargeCurrentChanges { get; set; }
+        public virtual DbSet<ChargePower> ChargePowers { get; set; }
 
         public ChargeContext(IConfiguration configuration, ILogger<ChargeContext> log)
         {

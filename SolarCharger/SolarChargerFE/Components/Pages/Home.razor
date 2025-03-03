@@ -82,6 +82,14 @@ else
                             </MudProgressLinear>
                         </MudItem>
                     }
+
+
+                    @if (_powerSeries.Data.Any())
+                    {
+                        <MudItem xs="6">
+                            <MudTimeSeriesChart ChartSeries="_powerChart" Width="100%" Height="350px" />
+                        </MudItem>
+                    }
                 </MudGrid>
             }
         </MudItem>

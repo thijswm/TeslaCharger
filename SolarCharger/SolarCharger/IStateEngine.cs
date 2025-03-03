@@ -8,5 +8,6 @@ namespace SolarCharger
         VehicleData? LatestVehicleData { get; }
         Task FireStartAsync();
         Task FireStopAsync();
+        List<PowerHistory> GetPowerHistory();
     }
 }

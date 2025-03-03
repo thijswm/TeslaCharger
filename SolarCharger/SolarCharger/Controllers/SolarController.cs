@@ -157,5 +157,22 @@ namespace SolarCharger.Controllers
 
             return Ok(new StreamVehicleData());
         }
+
+        [HttpGet]
+        [Route("api/get_power_history")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<PowerHistory>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+        public IActionResult GetPowerHistory()
+        {
+            try
+            {
+                var powerHistory = _stateEngine.GetPowerHistory();
+                return Ok(powerHistory);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Failed to get power history, Error: '{ex.Message}'");
+            }
+        }
     }
 }

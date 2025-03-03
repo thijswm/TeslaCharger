@@ -41,5 +41,11 @@ namespace SolarCharger.Services
                 .ToListAsync();
             return currentChanges;
         }
+
+        public async Task AddPowerHistoryAsync(ChargePower chargePower)
+        {
+            await context.ChargePowers.AddAsync(chargePower);
+            await context.SaveChangesAsync();
+        }
     }
 }
