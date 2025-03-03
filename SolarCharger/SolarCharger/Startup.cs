@@ -19,8 +19,8 @@ namespace SolarCharger
             services.AddScoped<SettingsService>();
             services.AddScoped<ChargeSessionService>();
             services.AddScoped<IPowerMeter, HomeWizardPowerMeter>();
-            //services.AddScoped<ITesla, Tesla>();
-            services.AddScoped<ITesla, TeslaSimulator>();
+            services.AddScoped<ITesla, Tesla>();
+            //services.AddScoped<ITesla, TeslaSimulator>();
             services.AddScoped<IHubService, HubService>();
             services.AddSingleton<IStateEngine, StateEngine>();
             services.AddDbContext<ChargeContext, ChargeContext>();
