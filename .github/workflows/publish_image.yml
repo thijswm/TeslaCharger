@@ -9,7 +9,7 @@ jobs:
       - name: Checkout the repo
         uses: actions/checkout@v4
       - name: Build docker image
-        run: docker build -f server.Dockerfile -t thijswm/tesla_solar_charger:latest ./SolarCharger
+        run: docker build -f ./SolarCharger/server.Dockerfile -t thijswm/tesla_solar_charger:latest .
       - name: push image
         run: |
           docker push hijswm/tesla_solar_charger:latest
