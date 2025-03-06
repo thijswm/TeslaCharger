@@ -1,4 +1,4 @@
-name: Build and Push docker iamge
+name: Build and Push docker image
 on:
   workflow_dispatch:
     inputs:
