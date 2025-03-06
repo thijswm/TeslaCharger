@@ -80,5 +80,10 @@ namespace SolarCharger.Services
             _log.LogInformation("Stop charging");
             await Task.Delay(100);
         }
+
+        public int CalculateChargePower(int phases)
+        {
+            return CurrentChargingAmps * phases * CurrentChargeVoltage;
+        }
     }
 }
