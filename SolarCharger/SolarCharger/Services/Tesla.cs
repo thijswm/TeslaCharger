@@ -27,6 +27,7 @@ namespace SolarCharger.Services
         public int CurrentChargeVoltage { get; set; }
         public int CurrentBatteryLevel { get; set; }
 
+
         public async Task StartAsync()
         {
             try
@@ -173,6 +174,11 @@ namespace SolarCharger.Services
                 throw new Exception($"Failed to set stop charging Response: '{response.Response.Reason}");
             }
             _log.LogInformation("Successfully stopped charge");
+        }
+
+        public int CalculateChargePower(int phases)
+        {
+            return CurrentChargingAmps * phases * CurrentChargeVoltage;
         }
 
         private async Task RefreshTokenAsync()

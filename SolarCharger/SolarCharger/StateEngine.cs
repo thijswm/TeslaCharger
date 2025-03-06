@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SolarCharger.EF;
 using SolarCharger.Services;
@@ -574,7 +573,7 @@ namespace SolarCharger
                 {
                     var activePower = await _powerMeter.GetActivePowerAsync();
                     currentPower = activePower.Values.Sum();
-                    compensatedPower = currentPower - _tesla.CurrentChargePower;
+                    compensatedPower = currentPower - _tesla.CalculateChargePower(_numPhases);
 
                     _compensatedHistory.Add(
                         new KeyValuePair<DateTime, int>(DateTime.Now, compensatedPower));

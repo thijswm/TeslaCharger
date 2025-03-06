@@ -15,5 +15,6 @@ namespace SolarCharger.Services
         Task SetChargeAmpsAsync(int amps);
         Task StartChargeAsync();
         Task StopChargeAsync();
+        int CalculateChargePower(int phases);
     }
 }
