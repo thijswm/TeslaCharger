@@ -1,9 +1,9 @@
 ﻿@page "/"
 @inherits MudComponentBase
-<PageTitle>Main</PageTitle>
+<PageTitle>Charge Controller</PageTitle>
 @if (_loading)
 {
-    <MudSkeleton Width="200px" Height="200px" />
+    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="100%" Height="60%" />
 }
 else if (!string.IsNullOrEmpty(_loadError))
 {
@@ -31,7 +31,7 @@ else
                     </MudItem>
                     @if (_currentVehicleData != null)
                     {
-                        <MudItem xs="4">
+                        <MudItem xs="12" sm="4">
                             <MudCard>
                                 <MudCardHeader>
                                     <CardHeaderContent>
@@ -47,7 +47,7 @@ else
                             </MudCard>
                         </MudItem>
 
-                        <MudItem xs="4">
+                        <MudItem xs="12" sm="4">
                             <MudCard>
                                 <MudCardHeader>
                                     <CardHeaderContent>
@@ -60,7 +60,7 @@ else
                             </MudCard>
                         </MudItem>
 
-                        <MudItem xs="4">
+                        <MudItem xs="12" sm="4">
                             <MudCard>
                                 <MudCardHeader>
                                     <CardHeaderContent>
@@ -86,7 +86,7 @@ else
 
                     @if (_powerSeries.Data.Any())
                     {
-                        <MudItem xs="6">
+                        <MudItem xs="12" sm="6">
                             <MudTimeSeriesChart ChartSeries="_powerChart" Width="100%" Height="350px" />
                         </MudItem>
                     }

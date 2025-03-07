@@ -735,6 +735,7 @@ namespace SolarCharger
                     LatestVehicleData = await _tesla.GetVehicleDataAsync();
                     _currentChargeSession.End = DateTime.Now;
                     _currentChargeSession.BatteryLevelEnded = _tesla.CurrentBatteryLevel;
+                    _currentChargeSession.EnergyAdded = LatestVehicleData.ChargeState?.ChargeEnergyAdded ?? 0;
                     await _chargeSessionService.UpdateChargeSessionAsync(_currentChargeSession);
 
                     await _hubService.SendVehicleDataAsync(LatestVehicleData);

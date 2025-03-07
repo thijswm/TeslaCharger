@@ -128,6 +128,40 @@ namespace SolarCharger.Controllers
         }
 
         [HttpGet]
+        [Route("api/get_power_history_for_session")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<PowerHistory>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+        public async Task<IActionResult> GetPowerHistorySession(Guid sessionId)
+        {
+            try
+            {
+                var powerHistory = await _chargeSessionService.GetPowerHistoryAsync(sessionId);
+                return Ok(powerHistory);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Failed to get power history for session, Error: '{ex.Message}'");
+            }
+        }
+
+        [HttpGet]
+        [Route("api/get_current_changes_for_session")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ChargeCurrentChangeViewModel>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+        public async Task<IActionResult> GetCurrentChangesSession(Guid sessionId)
+        {
+            try
+            {
+                return Ok(await _chargeSessionService.GetCurrentChangesAsync(sessionId));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Failed to get power history for session, Error: '{ex.Message}'");
+            }
+        }
+
+
+        [HttpGet]
         [Route("api/get_charge_current_changes")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ChargeCurrentChangeViewModel>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]

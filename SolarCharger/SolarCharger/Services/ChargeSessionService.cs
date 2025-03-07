@@ -47,5 +47,31 @@ namespace SolarCharger.Services
             await context.ChargePowers.AddAsync(chargePower);
             await context.SaveChangesAsync();
         }
+
+        public async Task<IEnumerable<PowerHistory>> GetPowerHistoryAsync(Guid sessionId)
+        {
+            var powerHistory = await context.ChargePowers
+                .AsNoTracking()
+                .Where(a => a.ChargeSessionId == sessionId)
+                .Select(a => new PowerHistory
+                {
+                    Time = a.Timestamp,
+                    Power = a.Power,
+                    CompensatedPower = a.CompensatedPower
+                }
+                )
+                .ToListAsync();
+            return powerHistory;
+        }
+
+        public async Task<IEnumerable<ChargeCurrentChangeViewModel>> GetCurrentChangesAsync(Guid sessionId)
+        {
+            var currentChanges = await context.ChargeCurrentChanges
+                .AsNoTracking()
+                .Where(a => a.ChargeSessionId == sessionId)
+                .Select(a => ChargeCurrentChangeViewModel.FromChargeCurrentChange(a))
+                .ToListAsync();
+            return currentChanges;
+        }
     }
 }

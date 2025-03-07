@@ -1,0 +1,38 @@
+﻿@page "/Reports"
+@inherits MudComponentBase
+<PageTitle>Reports</PageTitle>
+
+@if (_loading)
+{
+    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="100%" Height="60%" />
+}
+else
+{
+    <MudGrid>
+        <MudItem xs="12">
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Reports</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    @if (!string.IsNullOrEmpty(_loadError))
+                    {
+                        <MudAlert Severity="Severity.Error">@_loadError</MudAlert>
+                    }
+                    else
+                    {
+                        <MudDataGrid Items="@_chargeSessions" Hover="true" FilterMode="DataGridFilterMode.Simple" Filterable="true">
+                            <Columns>
+                                <PropertyColumn Property="x=>x.Start" Title="Start Time"/>
+                                <PropertyColumn Property="x=>x.End" Title="End Time"/>
+                                <PropertyColumn Property="x=>x.BatteryLevelEnded - x.BatteryLevelStarted" Title="Battery Level Increased" />
+                            </Columns>
+                        </MudDataGrid>
+                    }
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+}

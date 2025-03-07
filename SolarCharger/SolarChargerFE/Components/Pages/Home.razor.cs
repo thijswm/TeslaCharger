@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using MudBlazor;
-using static MudBlazor.CategoryTypes;
-using System;
 
 namespace SolarChargerFE.Components.Pages
 {
@@ -15,7 +13,7 @@ namespace SolarChargerFE.Components.Pages
         private string _loadError;
         private EState _currentState;
         private StreamVehicleData? _currentVehicleData;
-        private List<TimeSeriesChartSeries> _powerChart = new();
+        private readonly List<TimeSeriesChartSeries> _powerChart = new();
         private TimeSeriesChartSeries _powerSeries = new();
         private TimeSeriesChartSeries _compensatedPowerSeries = new();
 
@@ -25,8 +23,6 @@ namespace SolarChargerFE.Components.Pages
             try
             {
                 // get the initial state
-                _currentState = (await _client.Get_stateAsync()).State;
-
                 _hubConnection.On<StateViewModel>("StateChanged", (message) =>
                 {
                     _currentState = message.State;
@@ -68,6 +64,21 @@ namespace SolarChargerFE.Components.Pages
                         .Select(a => new TimeSeriesChartSeries.TimeValue(a.Time.LocalDateTime, a.CompensatedPower!.Value)).ToList();
                     InvokeAsync(StateHasChanged);
                 });
+
+                _currentState = (await _client.Get_stateAsync()).State;
+
+                if (_currentState != EState.Idle)
+                {
+                    _currentVehicleData = await _client.Get_latest_vehicle_dataAsync();
+                    var history = await _client.Get_power_historyAsync();
+
+                    _powerSeries.Data = history
+                        .Select(a => new TimeSeriesChartSeries.TimeValue(a.Time.LocalDateTime, a.Power)).ToList();
+
+                    _compensatedPowerSeries.Data = history
+                        .Where(a => a.CompensatedPower.HasValue)
+                        .Select(a => new TimeSeriesChartSeries.TimeValue(a.Time.LocalDateTime, a.CompensatedPower!.Value)).ToList();
+                }
 
                 if (_hubConnection.State == HubConnectionState.Disconnected)
                 {
