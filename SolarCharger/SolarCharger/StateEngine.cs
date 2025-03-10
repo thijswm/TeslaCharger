@@ -182,14 +182,6 @@ namespace SolarCharger
             return Task.CompletedTask;
         }
 
-        public void FireIdleLoop()
-        {
-            if (_stateMachine.CanFire(eTrigger.CheckToken))
-            {
-                _stateMachine.FireAsync(eTrigger.CheckToken);
-            }
-        }
-
         public async Task OnIdleAsync()
         {
             var settings = await _chargeContext.Settings.FirstOrDefaultAsync();

@@ -45,7 +45,4 @@ catch (Exception ex)
     return;
 }
 
-var stateEngine = host.Services.GetRequiredService<IStateEngine>();
-stateEngine.FireIdleLoop();
-
 await host.RunAsync();
