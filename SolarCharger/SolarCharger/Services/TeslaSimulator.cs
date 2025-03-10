@@ -23,6 +23,11 @@ namespace SolarCharger.Services
         public int CurrentBatteryLevel => 41;
         public int CurrentChargePower => (int)(CurrentChargingAmps * 1.73 * CurrentChargeVoltage);
 
+        public Task<string?> GetRefreshTokenAsync()
+        {
+            return null;
+        }
+
         public async Task StartAsync()
         {
             try

@@ -6,6 +6,7 @@ namespace SolarCharger
     {
         eState State { get; }
         VehicleData? LatestVehicleData { get; }
+        void FireIdleLoop();
         Task FireStartAsync();
         Task FireStopAsync();
         List<PowerHistory> GetPowerHistory();

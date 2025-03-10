@@ -28,6 +28,35 @@ namespace SolarCharger.Services
         public int CurrentBatteryLevel { get; set; }
 
 
+        public async Task<string?> GetRefreshTokenAsync()
+        {
+            try
+            {
+                _settings = await _chargeContext.Settings.FirstOrDefaultAsync();
+            }
+            catch (Exception exp)
+            {
+                return null;
+            }
+
+            if (_settings is { Enabled: true })
+            {
+                try
+                {
+                    var newToken = await RefreshTokenAsync();
+                    if (newToken != null)
+                    {
+                        return newToken.RefreshToken;
+                    }
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+            }
+            return null;
+        }
+
         public async Task StartAsync()
         {
             try
@@ -181,7 +210,7 @@ namespace SolarCharger.Services
             return CurrentChargingAmps * phases * CurrentChargeVoltage;
         }
 
-        private async Task RefreshTokenAsync()
+        private async Task<Token?> RefreshTokenAsync()
         {
             if (_settings != null)
             {
@@ -214,9 +243,12 @@ namespace SolarCharger.Services
                     {
                         _log.LogInformation("New Token: '{Token}'", newToken);
                         _currentToken = newToken;
+                        return newToken;
                     }
                 }
             }
+
+            return null;
         }
 
         public async Task<T?> PostAndDeserializeAsync<T>(string url, object payload, string? token = null)

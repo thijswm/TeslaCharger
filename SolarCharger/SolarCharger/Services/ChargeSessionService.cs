@@ -73,5 +73,16 @@ namespace SolarCharger.Services
                 .ToListAsync();
             return currentChanges;
         }
+
+        public async Task UpdateRefreshTokenAsync(string refreshToken)
+        {
+            var settings = await context.Settings.FirstOrDefaultAsync();
+            if (settings != null)
+            {
+                settings.TeslaRefreshToken = refreshToken;
+                context.Entry(settings).Property(a => a.TeslaRefreshToken).IsModified = true;
+                await context.SaveChangesAsync();
+            }
+        }
     }
 }

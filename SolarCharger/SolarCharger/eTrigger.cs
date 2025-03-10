@@ -2,6 +2,7 @@
 {
     public enum eTrigger
     {
+        CheckToken,
         Start,
         Started,
         TeslaCheckOnline,

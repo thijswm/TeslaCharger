@@ -52,7 +52,9 @@ namespace SolarCharger
             _startChargeTrigger = _stateMachine.SetTriggerParameters<int>(eTrigger.StartCharge);
 
             _stateMachine.Configure(eState.Idle)
-                .Permit(eTrigger.Start, eState.Starting);
+                .OnEntryAsync(OnIdleAsync)
+                .Permit(eTrigger.Start, eState.Starting)
+                .PermitReentry(eTrigger.CheckToken);
 
             _stateMachine.Configure(eState.Starting)
                 .OnEntryAsync(OnStartAsync)
@@ -178,6 +180,37 @@ namespace SolarCharger
             _log.LogInformation("Stopping State Engine");
             _stopRequested = true;
             return Task.CompletedTask;
+        }
+
+        public void FireIdleLoop()
+        {
+            if (_stateMachine.CanFire(eTrigger.CheckToken))
+            {
+                _stateMachine.FireAsync(eTrigger.CheckToken);
+            }
+        }
+
+        public async Task OnIdleAsync()
+        {
+            var settings = await _chargeContext.Settings.FirstOrDefaultAsync();
+            if (settings != null)
+            {
+                var possibleNewToken = await _tesla.GetRefreshTokenAsync();
+                if (!string.IsNullOrEmpty(possibleNewToken))
+                {
+                    _log.LogInformation("New token found, updating settings");
+                    try
+                    {
+                        await _chargeSessionService.UpdateRefreshTokenAsync(possibleNewToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        _log.LogError("Failed to update refresh token, Error: '{Error}'", ex.Message);
+                    }
+                }
+            }
+            await Task.Delay(TimeSpan.FromSeconds(10));
+            await _stateMachine.FireAsync(eTrigger.CheckToken);
         }
 
         private async Task OnStartAsync()
