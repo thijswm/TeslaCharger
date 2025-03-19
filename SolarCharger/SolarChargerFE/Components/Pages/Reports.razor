@@ -48,12 +48,20 @@ else
                         @if (_loadingChargeSession)
                         {
                             <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="100%" Height="60%" />
+                            <MudText>Loading...</MudText>
                         }
                         else
                         {
                             @if (_powerSeries.Data.Any())
                             {
-                                <MudTimeSeriesChart ChartSeries="_powerChart" Width="100%" Height="350px" TimeLabelSpacing="TimeSpan.FromMinutes(30)" />
+                                <MudGrid>
+                                    <MudItem xs="12" sm="6">
+                                        <MudTimeSeriesChart ChartSeries="_powerChart" Width="100%" Height="350px" TimeLabelSpacing="TimeSpan.FromMinutes(30)" />
+                                    </MudItem>
+                                    <MudItem xs="12" sm="6">
+                                        <MudTimeSeriesChart ChartSeries="_currentChart" Width="100%" Height="350px" TimeLabelSpacing="TimeSpan.FromMinutes(30)" />
+                                    </MudItem>
+                                </MudGrid>
                             }
                             else
                             {

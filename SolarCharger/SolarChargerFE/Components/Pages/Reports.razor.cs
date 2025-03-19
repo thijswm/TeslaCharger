@@ -18,6 +18,9 @@ namespace SolarChargerFE.Components.Pages
         private TimeSeriesChartSeries _powerSeries = new();
         private TimeSeriesChartSeries _compensatedPowerSeries = new();
 
+        private readonly List<TimeSeriesChartSeries> _currentChart = new();
+        private TimeSeriesChartSeries _currentSeries = new();
+
         protected override async Task OnInitializedAsync()
         {
             _loading = true;
@@ -32,15 +35,23 @@ namespace SolarChargerFE.Components.Pages
 
             _compensatedPowerSeries = new TimeSeriesChartSeries
             {
-                Index = 0,
+                Index = 1,
                 Name = "Compensated Power",
+                IsVisible = true,
+                Type = TimeSeriesDisplayType.Line
+            };
+
+            _currentSeries = new TimeSeriesChartSeries
+            {
+                Index = 2,
+                Name = "Current",
                 IsVisible = true,
                 Type = TimeSeriesDisplayType.Line
             };
 
             _powerChart.Add(_powerSeries);
             _powerChart.Add(_compensatedPowerSeries);
-
+            _currentChart.Add(_currentSeries);
 
             try
             {
@@ -58,35 +69,47 @@ namespace SolarChargerFE.Components.Pages
             }
         }
 
-        private async void OnChargeSessionClick(DataGridRowClickEventArgs<ChargeSession> chargeSession)
+        private void OnChargeSessionClick(DataGridRowClickEventArgs<ChargeSession> chargeSession)
         {
             _selectedChargeSession = chargeSession.Item;
 
-            _loadingChargeSession = true;
-            if (_selectedChargeSession != null)
+            Task.Run(async () =>
             {
-                try
+                _loadingChargeSession = true;
+                await InvokeAsync(StateHasChanged);
+                if (_selectedChargeSession != null)
                 {
-                    var powerHistory = await _client.Get_power_history_for_sessionAsync(_selectedChargeSession.Id);
+                    try
+                    {
+                        var powerHistory = await _client.Get_power_history_for_sessionAsync(_selectedChargeSession.Id);
+
+                        _powerSeries.Data = powerHistory
+                            .Select(a => new TimeSeriesChartSeries.TimeValue(a.Time.LocalDateTime, a.Power)).ToList();
+
+                        _compensatedPowerSeries.Data = powerHistory
+                            .Where(a => a.CompensatedPower.HasValue)
+                            .Select(a =>
+                                new TimeSeriesChartSeries.TimeValue(a.Time.LocalDateTime, a.CompensatedPower!.Value))
+                            .ToList();
 
 
-                    _powerSeries.Data = powerHistory
-                        .Select(a => new TimeSeriesChartSeries.TimeValue(a.Time.LocalDateTime, a.Power)).ToList();
+                        var currentChanges =
+                            await _client.Get_current_changes_for_sessionAsync(_selectedChargeSession.Id);
+                        _currentSeries.Data = currentChanges
+                            .Select(a => new TimeSeriesChartSeries.TimeValue(a.Timestamp.LocalDateTime, a.Current))
+                            .ToList();
 
-                    _compensatedPowerSeries.Data = powerHistory
-                        .Where(a => a.CompensatedPower.HasValue)
-                        .Select(a => new TimeSeriesChartSeries.TimeValue(a.Time.LocalDateTime, a.CompensatedPower!.Value)).ToList();
-
-                    await InvokeAsync(StateHasChanged);
+                        
+                    }
+                    catch (Exception exp)
+                    {
+                        _snackBar.Add($"Failed to load power history for session, Error: '{exp.Message}'",
+                            Severity.Error);
+                    }
                 }
-                catch (Exception exp)
-                {
-                    _snackBar.Add($"Failed to load power history for session, Error: '{exp.Message}'", Severity.Error);
-                }
-            }
-
-            _loadingChargeSession = false;
-            StateHasChanged();
+                _loadingChargeSession = false;
+                await InvokeAsync(StateHasChanged);
+            });
         }
     }
 }
