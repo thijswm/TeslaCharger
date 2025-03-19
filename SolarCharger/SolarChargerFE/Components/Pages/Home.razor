@@ -76,18 +76,26 @@ else
                             </MudCard>
                         </MudItem>
 
-                        <MudItem xs="12">
-                            <MudProgressLinear Color="Color.Tertiary" Value="@(_currentVehicleData!.BatteryLevel)" Size="Size.Large" Striped="true">
-                                <MudText Typo="Typo.h6">@_currentVehicleData!.BatteryLevel</MudText>
-                            </MudProgressLinear>
+                        <MudItem xs="10">
+                            <MudProgressLinear Color="Color.Tertiary" Value="@(_currentVehicleData!.BatteryLevel)" Size="Size.Large" Striped="true" />
+                        </MudItem>
+                        <MudItem xs="2">
+                            <MudText Typo="Typo.h6">@_currentVehicleData.BatteryLevel % / @_currentVehicleData.ChargeLimitSoc %</MudText>
                         </MudItem>
                     }
 
 
                     @if (_powerSeries.Data.Any())
                     {
-                        <MudItem xs="12" sm="6">
-                            <MudTimeSeriesChart ChartSeries="_powerChart" Width="100%" Height="350px" />
+                        <MudItem xs="12">
+                            <MudTimeSeriesChart ChartSeries="_powerChart" Width="100%" Height="350px" TimeLabelSpacing="TimeSpan.FromMinutes(30)" />
+                        </MudItem>
+                    }
+
+                    @if (_currentSeries.Data.Any())
+                    {
+                        <MudItem xs="12">
+                            <MudTimeSeriesChart ChartSeries="_currentChart" Width="100%" Height="350px" TimeLabelSpacing="TimeSpan.FromMinutes(240)" />
                         </MudItem>
                     }
                 </MudGrid>

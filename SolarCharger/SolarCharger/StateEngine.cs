@@ -52,9 +52,7 @@ namespace SolarCharger
             _startChargeTrigger = _stateMachine.SetTriggerParameters<int>(eTrigger.StartCharge);
 
             _stateMachine.Configure(eState.Idle)
-                .OnEntryAsync(OnIdleAsync)
-                .Permit(eTrigger.Start, eState.Starting)
-                .PermitReentry(eTrigger.CheckToken);
+                .Permit(eTrigger.Start, eState.Starting);
 
             _stateMachine.Configure(eState.Starting)
                 .OnEntryAsync(OnStartAsync)
@@ -180,29 +178,6 @@ namespace SolarCharger
             _log.LogInformation("Stopping State Engine");
             _stopRequested = true;
             return Task.CompletedTask;
-        }
-
-        public async Task OnIdleAsync()
-        {
-            var settings = await _chargeContext.Settings.FirstOrDefaultAsync();
-            if (settings != null)
-            {
-                var possibleNewToken = await _tesla.GetRefreshTokenAsync();
-                if (!string.IsNullOrEmpty(possibleNewToken))
-                {
-                    _log.LogInformation("New token found, updating settings");
-                    try
-                    {
-                        await _chargeSessionService.UpdateRefreshTokenAsync(possibleNewToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        _log.LogError("Failed to update refresh token, Error: '{Error}'", ex.Message);
-                    }
-                }
-            }
-            await Task.Delay(TimeSpan.FromSeconds(10));
-            await _stateMachine.FireAsync(eTrigger.CheckToken);
         }
 
         private async Task OnStartAsync()
@@ -640,21 +615,7 @@ namespace SolarCharger
 
         private async Task OnMonitorChargeDurationReachedAsync()
         {
-            // we always get the vehicle data now to get the correct power
-            // and check for the battery level
-            try
-            {
-                LatestVehicleData = await _tesla.GetVehicleDataAsync();
-                _log.LogInformation("Vehicle data: {VehicleData}", LatestVehicleData);
-            }
-            catch (Exception exp)
-            {
-                _log.LogError("Failed to get vehicle data, Error: '{Error}'", exp.Message);
-                await _stateMachine.FireAsync(eTrigger.Error);
-                return;
-            }
-
-            await _hubService.SendVehicleDataAsync(LatestVehicleData);
+            if (await UpdateVehicleDataAsync()) return;
 
             // we check if we reached the battery level
             // if so, we can stop charging already
@@ -689,6 +650,7 @@ namespace SolarCharger
                     _settings!.EnoughSolarWatt, compensatedAverage.Value, timeSinceChargeStart.TotalSeconds);
             }
 
+            var amperageChanged = false;
             var availablePower = compensatedAverage.Value! * -1;
             var possibleAmps = GetAvailableCurrent((int)availablePower);
             if (possibleAmps != _tesla.CurrentChargingAmps)
@@ -726,6 +688,8 @@ namespace SolarCharger
                     await _stateMachine.FireAsync(eTrigger.Error);
                     return;
                 }
+
+                amperageChanged = true;
             }
             else
             {
@@ -739,7 +703,36 @@ namespace SolarCharger
 
             _log.LogDebug("Waiting for {Seconds} sec.", _settings!.PollTime.TotalSeconds);
             await Task.Delay(_settings.PollTime);
+
+
+            // if the amperage is changed we will query the vehicle data again
+            // and send an update to the gui
+            if (amperageChanged && await UpdateVehicleDataAsync())
+            {
+                return;
+            }
+
             await _stateMachine.FireAsync(eTrigger.MonitorCharge);
+        }
+
+        private async Task<bool> UpdateVehicleDataAsync()
+        {
+            // we always get the vehicle data now to get the correct power
+            // and check for the battery level
+            try
+            {
+                LatestVehicleData = await _tesla.GetVehicleDataAsync();
+                _log.LogInformation("Vehicle data: {VehicleData}", LatestVehicleData);
+            }
+            catch (Exception exp)
+            {
+                _log.LogError("Failed to get vehicle data, Error: '{Error}'", exp.Message);
+                await _stateMachine.FireAsync(eTrigger.Error);
+                return true;
+            }
+
+            await _hubService.SendVehicleDataAsync(LatestVehicleData);
+            return false;
         }
 
         private async Task OnStopChargeAsync()

@@ -1,4 +1,5 @@
 ﻿@page "/Reports"
+@using SolarChargerFE.Components.Pages.ViewModel
 @inherits MudComponentBase
 <PageTitle>Reports</PageTitle>
 
@@ -13,7 +14,7 @@ else
             <MudCard>
                 <MudCardHeader>
                     <CardHeaderContent>
-                        <MudText Typo="Typo.h6">Reports</MudText>
+                        <MudText Typo="Typo.h6">Charging Sessions</MudText>
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
@@ -23,16 +24,45 @@ else
                     }
                     else
                     {
-                        <MudDataGrid Items="@_chargeSessions" Hover="true" FilterMode="DataGridFilterMode.Simple" Filterable="true">
+                        <MudDataGrid T="ChargeSession" Items="@_chargeSessions" Hover="true" RowClick="@OnChargeSessionClick">
                             <Columns>
-                                <PropertyColumn Property="x=>x.Start" Title="Start Time"/>
-                                <PropertyColumn Property="x=>x.End" Title="End Time"/>
-                                <PropertyColumn Property="x=>x.BatteryLevelEnded - x.BatteryLevelStarted" Title="Battery Level Increased" />
+                                <PropertyColumn Property="x=>x.StartDate" Title="Start Time" />
+                                <PropertyColumn Property="x=>x.EndDate" Title="End Time" />
+                                <PropertyColumn Property="x=>x.BatteryLevelIncreased" Title="Battery Level Increased" />
                             </Columns>
                         </MudDataGrid>
                     }
                 </MudCardContent>
             </MudCard>
         </MudItem>
+        @if (_selectedChargeSession != null)
+        {
+            <MudItem xs="12">
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Charging Session Details</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        @if (_loadingChargeSession)
+                        {
+                            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="100%" Height="60%" />
+                        }
+                        else
+                        {
+                            @if (_powerSeries.Data.Any())
+                            {
+                                <MudTimeSeriesChart ChartSeries="_powerChart" Width="100%" Height="350px" TimeLabelSpacing="TimeSpan.FromMinutes(30)" />
+                            }
+                            else
+                            {
+                                <MudText>No data available</MudText>
+                            }
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        }
     </MudGrid>
 }

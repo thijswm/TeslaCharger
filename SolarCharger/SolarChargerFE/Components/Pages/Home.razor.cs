@@ -17,6 +17,10 @@ namespace SolarChargerFE.Components.Pages
         private TimeSeriesChartSeries _powerSeries = new();
         private TimeSeriesChartSeries _compensatedPowerSeries = new();
 
+        private readonly List<TimeSeriesChartSeries> _currentChart = new();
+        private TimeSeriesChartSeries _currentSeries = new();
+
+
         protected override async Task OnInitializedAsync()
         {
             _loading = true;
@@ -51,8 +55,17 @@ namespace SolarChargerFE.Components.Pages
                     Type = TimeSeriesDisplayType.Line
                 };
 
+                _currentSeries = new TimeSeriesChartSeries
+                {
+                    Index = 0,
+                    Name = "Current",
+                    IsVisible = true,
+                    Type = TimeSeriesDisplayType.Line
+                };
+
                 _powerChart.Add(_powerSeries);
                 _powerChart.Add(_compensatedPowerSeries);
+                _currentChart.Add(_currentSeries);
 
                 _hubConnection.On<List<PowerHistory>>("PowerHistory", (history) =>
                 {
@@ -78,6 +91,11 @@ namespace SolarChargerFE.Components.Pages
                     _compensatedPowerSeries.Data = history
                         .Where(a => a.CompensatedPower.HasValue)
                         .Select(a => new TimeSeriesChartSeries.TimeValue(a.Time.LocalDateTime, a.CompensatedPower!.Value)).ToList();
+
+
+                    //var currentChanges = await _client.Get_charge_current_changesAsync();
+                    //_currentSeries.Data = currentChanges
+                    //    .Select(a => new TimeSeriesChartSeries.TimeValue(a.Timestamp.LocalDateTime, a.Current)).ToList();
                 }
 
                 if (_hubConnection.State == HubConnectionState.Disconnected)
