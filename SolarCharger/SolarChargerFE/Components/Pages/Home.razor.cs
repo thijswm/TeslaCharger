@@ -44,7 +44,7 @@ namespace SolarChargerFE.Components.Pages
                     Index = 0,
                     Name = "Power",
                     IsVisible = true,
-                    Type = TimeSeriesDisplayType.Line
+                    LineDisplayType = LineDisplayType.Line
                 };
 
                 _compensatedPowerSeries = new TimeSeriesChartSeries
@@ -52,7 +52,7 @@ namespace SolarChargerFE.Components.Pages
                     Index = 0,
                     Name = "Compensated Power",
                     IsVisible = true,
-                    Type = TimeSeriesDisplayType.Line
+                    LineDisplayType = LineDisplayType.Line
                 };
 
                 _currentSeries = new TimeSeriesChartSeries
@@ -60,7 +60,7 @@ namespace SolarChargerFE.Components.Pages
                     Index = 0,
                     Name = "Current",
                     IsVisible = true,
-                    Type = TimeSeriesDisplayType.Line
+                    LineDisplayType = LineDisplayType.Line
                 };
 
                 _powerChart.Add(_powerSeries);

@@ -9,68 +9,134 @@
 }
 else
 {
-    <MudGrid>
-        <MudItem xs="12">
-            <MudCard>
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText Typo="Typo.h6">Charging Sessions</MudText>
-                    </CardHeaderContent>
-                </MudCardHeader>
-                <MudCardContent>
-                    @if (!string.IsNullOrEmpty(_loadError))
-                    {
-                        <MudAlert Severity="Severity.Error">@_loadError</MudAlert>
-                    }
-                    else
-                    {
-                        <MudDataGrid T="ChargeSession" Items="@_chargeSessions" Hover="true" RowClick="@OnChargeSessionClick">
-                            <Columns>
-                                <PropertyColumn Property="x=>x.StartDate" Title="Start Time" />
-                                <PropertyColumn Property="x=>x.EndDate" Title="End Time" />
-                                <PropertyColumn Property="x=>x.BatteryLevelIncreased" Title="Battery Level Increased" />
-                            </Columns>
-                        </MudDataGrid>
-                    }
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-        @if (_selectedChargeSession != null)
-        {
-            <MudItem xs="12">
-                <MudCard>
-                    <MudCardHeader>
-                        <CardHeaderContent>
-                            <MudText Typo="Typo.h6">Charging Session Details</MudText>
-                        </CardHeaderContent>
-                    </MudCardHeader>
-                    <MudCardContent>
-                        @if (_loadingChargeSession)
-                        {
-                            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="100%" Height="60%" />
-                            <MudText>Loading...</MudText>
-                        }
-                        else
-                        {
-                            @if (_powerSeries.Data.Any())
+    <MudBreakpointProvider>
+        <MudHidden Breakpoint="Breakpoint.LgAndDown">
+            <MudGrid>
+                <MudItem xs="6">
+                    <MudCard>
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">Charging Sessions</MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            @if (!string.IsNullOrEmpty(_loadError))
                             {
-                                <MudGrid>
-                                    <MudItem xs="12" sm="6">
-                                        <MudTimeSeriesChart ChartSeries="_powerChart" Width="100%" Height="350px" TimeLabelSpacing="TimeSpan.FromMinutes(30)" />
-                                    </MudItem>
-                                    <MudItem xs="12" sm="6">
-                                        <MudTimeSeriesChart ChartSeries="_currentChart" Width="100%" Height="350px" TimeLabelSpacing="TimeSpan.FromMinutes(30)" />
-                                    </MudItem>
-                                </MudGrid>
+                                <MudAlert Severity="Severity.Error">@_loadError</MudAlert>
                             }
                             else
                             {
-                                <MudText>No data available</MudText>
+                                <MudDataGrid T="ChargeSession" Items="@_chargeSessions" Hover="true">
+                                    <Columns>
+                                        <PropertyColumn Property="x => x.StartDate" Title="Start Time" />
+                                        <PropertyColumn Property="x => x.EndDate" Title="End Time" />
+                                        <PropertyColumn Property="x => x.BatteryLevelIncreased" Title="Battery Level Increased" />
+                                        <TemplateColumn CellClass="d-flex justify-end">
+                                            <CellTemplate>
+                                                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => OnChargeSessionClick(context.Item))">Details</MudButton>
+                                            </CellTemplate>
+                                        </TemplateColumn>
+                                    </Columns>
+                                    <PagerContent>
+                                        <MudDataGridPager T="ChargeSession" />
+                                    </PagerContent>
+                                </MudDataGrid>
                             }
-                        }
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-        }
-    </MudGrid>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+
+                <MudItem xs="6">
+                    <MudCard>
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">Charging Session Details</MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            @if (_selectedChargeSession != null)
+                            {
+                                @if (_loadingChargeSession)
+                                {
+                                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="100%" Height="60%" />
+                                    <MudText>Loading...</MudText>
+                                }
+                                else
+                                {
+                                    @if (_powerSeries.Data.Any())
+                                    {
+                                        <MudGrid>
+                                            <MudItem xs="12">
+                                                <MudTimeSeriesChart YAxisTitle="W" ChartOptions="_powerOptions" ChartSeries="_powerChart" Width="100%" Height="350px" TimeLabelSpacing="TimeSpan.FromMinutes(30)" />
+                                            </MudItem>
+                                            <MudItem xs="12">
+                                                <MudTimeSeriesChart YAxisTitle="A" ChartOptions="_currentOptions" ChartSeries="_currentChart" Width="100%" Height="350px" TimeLabelSpacing="TimeSpan.FromMinutes(30)" />
+                                            </MudItem>
+                                        </MudGrid>
+                                    }
+                                    else
+                                    {
+                                        <MudText>No data available</MudText>
+                                    }
+                                }
+                            }
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+        </MudHidden>
+        <MudHidden Breakpoint="Breakpoint.LgAndDown" Invert="true">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudCard>
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">Charging Session Details</MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudGrid>
+                                <MudItem xs="12">
+                                    <MudSelect T="ChargeSession" Variant="Variant.Filled" Label="Charging Session" @bind-Value="SelectedChargeSession">
+                                        @foreach (var chargeSession in _chargeSessions)
+                                        {
+                                            <MudSelectItem Value="chargeSession">@chargeSession.StartDate - @chargeSession.EndDate - @chargeSession.BatteryLevelIncreased %</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                                <MudItem xs="12">
+                                    @if (_selectedChargeSession != null)
+                                    {
+                                        @if (_loadingChargeSession)
+                                        {
+                                            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="100%" Height="60%" />
+                                            <MudText>Loading...</MudText>
+                                        }
+                                        else
+                                        {
+                                            @if (_powerSeries.Data.Any())
+                                            {
+                                                <MudGrid>
+                                                    <MudItem xs="12">
+                                                        <MudTimeSeriesChart YAxisTitle="W" ChartOptions="_powerOptions" ChartSeries="_powerChart" Width="100%" Height="350px" TimeLabelSpacing="TimeSpan.FromMinutes(30)" />
+                                                    </MudItem>
+                                                    <MudItem xs="12">
+                                                        <MudTimeSeriesChart YAxisTitle="A" ChartOptions="_currentOptions" ChartSeries="_currentChart" Width="100%" Height="350px" TimeLabelSpacing="TimeSpan.FromMinutes(30)" />
+                                                    </MudItem>
+                                                </MudGrid>
+                                            }
+                                            else
+                                            {
+                                                <MudText>No data available</MudText>
+                                            }
+                                        }
+                                    }
+                                </MudItem>
+                            </MudGrid>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+        </MudHidden>
+    </MudBreakpointProvider>
 }

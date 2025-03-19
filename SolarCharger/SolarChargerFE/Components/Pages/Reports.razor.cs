@@ -14,23 +14,29 @@ namespace SolarChargerFE.Components.Pages
         private ChargeSession? _selectedChargeSession;
 
         private bool _loadingChargeSession;
+        private ChartOptions _powerOptions = new();
         private readonly List<TimeSeriesChartSeries> _powerChart = new();
         private TimeSeriesChartSeries _powerSeries = new();
         private TimeSeriesChartSeries _compensatedPowerSeries = new();
 
+        private ChartOptions _currentOptions = new();
         private readonly List<TimeSeriesChartSeries> _currentChart = new();
         private TimeSeriesChartSeries _currentSeries = new();
 
         protected override async Task OnInitializedAsync()
         {
             _loading = true;
+            _powerOptions.XAxisLines = true;
+            _currentOptions.XAxisLines = true;
+            _currentOptions.YAxisTicks = 1;
+            _currentOptions.YAxisRequireZeroPoint = true;
 
             _powerSeries = new TimeSeriesChartSeries
             {
                 Index = 0,
                 Name = "Power",
                 IsVisible = true,
-                Type = TimeSeriesDisplayType.Line
+                LineDisplayType = LineDisplayType.Line
             };
 
             _compensatedPowerSeries = new TimeSeriesChartSeries
@@ -38,7 +44,7 @@ namespace SolarChargerFE.Components.Pages
                 Index = 1,
                 Name = "Compensated Power",
                 IsVisible = true,
-                Type = TimeSeriesDisplayType.Line
+                LineDisplayType = LineDisplayType.Line
             };
 
             _currentSeries = new TimeSeriesChartSeries
@@ -46,7 +52,7 @@ namespace SolarChargerFE.Components.Pages
                 Index = 2,
                 Name = "Current",
                 IsVisible = true,
-                Type = TimeSeriesDisplayType.Line
+                LineDisplayType = LineDisplayType.Line
             };
 
             _powerChart.Add(_powerSeries);
@@ -69,9 +75,22 @@ namespace SolarChargerFE.Components.Pages
             }
         }
 
-        private void OnChargeSessionClick(DataGridRowClickEventArgs<ChargeSession> chargeSession)
+        private ChargeSession? SelectedChargeSession
         {
-            _selectedChargeSession = chargeSession.Item;
+            get => _selectedChargeSession;
+            set
+            {
+                if (value != null)
+                {
+                    OnChargeSessionClick(value);
+                    _selectedChargeSession = value;
+                }
+            }
+        }
+
+        private void OnChargeSessionClick(ChargeSession chargeSession)
+        {
+            _selectedChargeSession = chargeSession;
 
             Task.Run(async () =>
             {
@@ -99,7 +118,7 @@ namespace SolarChargerFE.Components.Pages
                             .Select(a => new TimeSeriesChartSeries.TimeValue(a.Timestamp.LocalDateTime, a.Current))
                             .ToList();
 
-                        
+
                     }
                     catch (Exception exp)
                     {
