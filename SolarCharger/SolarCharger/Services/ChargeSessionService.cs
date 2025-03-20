@@ -74,15 +74,10 @@ namespace SolarCharger.Services
             return currentChanges;
         }
 
-        public async Task UpdateRefreshTokenAsync(string refreshToken)
+        public async Task AddVehicleDataLog(VehicleDataLog vehicleDataLog)
         {
-            var settings = await context.Settings.FirstOrDefaultAsync();
-            if (settings != null)
-            {
-                settings.TeslaRefreshToken = refreshToken;
-                context.Entry(settings).Property(a => a.TeslaRefreshToken).IsModified = true;
-                await context.SaveChangesAsync();
-            }
+            await context.VehicleDataLog.AddAsync(vehicleDataLog);
+            await context.SaveChangesAsync();
         }
     }
 }

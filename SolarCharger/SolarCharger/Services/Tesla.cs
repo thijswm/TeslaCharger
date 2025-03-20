@@ -27,36 +27,6 @@ namespace SolarCharger.Services
         public int CurrentChargeVoltage { get; set; }
         public int CurrentBatteryLevel { get; set; }
 
-
-        public async Task<string?> GetRefreshTokenAsync()
-        {
-            try
-            {
-                _settings = await _chargeContext.Settings.FirstOrDefaultAsync();
-            }
-            catch (Exception exp)
-            {
-                return null;
-            }
-
-            if (_settings is { Enabled: true })
-            {
-                try
-                {
-                    var newToken = await RefreshTokenAsync();
-                    if (newToken != null)
-                    {
-                        return newToken.RefreshToken;
-                    }
-                }
-                catch (Exception)
-                {
-                    // ignored
-                }
-            }
-            return null;
-        }
-
         public async Task StartAsync()
         {
             try

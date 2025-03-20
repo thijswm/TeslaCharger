@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using SolarCharger.EF;
 using SolarCharger.Services;
 using SolarCharger.Services.Objects;
@@ -33,6 +34,7 @@ namespace SolarCharger
         private readonly List<PowerHistory> _totalPowerHistory = new();
         private int _numPhases = 3;
         private DateTime _lastChargeStart = DateTime.MinValue;
+        private double _startChargeEnergyAdded = 0;
         private DateTime _lastChargeMonitoringStart = DateTime.MinValue;
         private bool _stopRequested;
         private eState _state = eState.Idle;
@@ -257,6 +259,7 @@ namespace SolarCharger
                     LatestVehicleData = await _tesla.GetVehicleDataAsync();
                     _log.LogInformation("Vehicle data: {Data}", LatestVehicleData);
 
+                    await AddVehicleData(LatestVehicleData);
                     await _hubService.SendVehicleDataAsync(LatestVehicleData);
 
                     if (LatestVehicleData.ChargeState is { IsChargePortLatched: true })
@@ -432,6 +435,7 @@ namespace SolarCharger
                 {
                     await _tesla.StartChargeAsync();
                     _lastChargeStart = DateTime.Now;
+                    _startChargeEnergyAdded = LatestVehicleData?.ChargeState?.ChargeEnergyAdded ?? 0;
 
                     _currentChargeSession = new ChargeSession
                     {
@@ -535,6 +539,7 @@ namespace SolarCharger
                 LatestVehicleData = await _tesla.GetVehicleDataAsync();
                 _log.LogInformation("Vehicle data: {Data}", LatestVehicleData);
 
+                await AddVehicleData(LatestVehicleData);
                 await _hubService.SendVehicleDataAsync(LatestVehicleData);
             }
             catch (Exception ex)
@@ -731,6 +736,7 @@ namespace SolarCharger
                 return true;
             }
 
+            await AddVehicleData(LatestVehicleData);
             await _hubService.SendVehicleDataAsync(LatestVehicleData);
             return false;
         }
@@ -753,9 +759,11 @@ namespace SolarCharger
                     LatestVehicleData = await _tesla.GetVehicleDataAsync();
                     _currentChargeSession.End = DateTime.Now;
                     _currentChargeSession.BatteryLevelEnded = _tesla.CurrentBatteryLevel;
-                    _currentChargeSession.EnergyAdded = LatestVehicleData.ChargeState?.ChargeEnergyAdded ?? 0;
+                    _currentChargeSession.EnergyAdded = LatestVehicleData.ChargeState?.ChargeEnergyAdded ?? 0 - _startChargeEnergyAdded;
+
                     await _chargeSessionService.UpdateChargeSessionAsync(_currentChargeSession);
 
+                    await AddVehicleData(LatestVehicleData);
                     await _hubService.SendVehicleDataAsync(LatestVehicleData);
                 }
             }
@@ -765,6 +773,29 @@ namespace SolarCharger
             }
 
             await _stateMachine.FireAsync(eTrigger.StopChargeDone);
+        }
+
+        private async Task AddVehicleData(VehicleData vehicleData)
+        {
+            if (_currentChargeSession != null)
+            {
+                try
+                {
+                    var vehicleDataLog = new VehicleDataLog
+                    {
+                        Id = Guid.NewGuid(),
+                        ChargeSessionId = _currentChargeSession.Id,
+                        ChargeSession = _currentChargeSession,
+                        Timestamp = DateTime.Now,
+                        Data = JsonConvert.SerializeObject(vehicleData)
+                    };
+                    await _chargeSessionService.AddVehicleDataLog(vehicleDataLog);
+                }
+                catch (Exception exp)
+                {
+                    _log.LogError($"Failed to store vehicle data, Error: '{exp.Message}'");
+                }
+            }
         }
     }
 }

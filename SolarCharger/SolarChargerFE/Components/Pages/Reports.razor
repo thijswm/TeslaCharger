@@ -72,6 +72,9 @@ else
                                             <MudItem xs="12">
                                                 <MudTimeSeriesChart YAxisTitle="A" ChartOptions="_currentOptions" ChartSeries="_currentChart" Width="100%" Height="350px" TimeLabelSpacing="TimeSpan.FromMinutes(30)" />
                                             </MudItem>
+                                            <MudItem xs="12">
+                                                <MudTimeSeriesChart YAxisTitle="kWh" ChartOptions="_currentOptions" ChartSeries="_groupedData" Width="100%" Height="350px" TimeLabelSpacing="TimeSpan.FromMinutes(30)" />
+                                            </MudItem>
                                         </MudGrid>
                                     }
                                     else
@@ -122,6 +125,9 @@ else
                                                     </MudItem>
                                                     <MudItem xs="12">
                                                         <MudTimeSeriesChart YAxisTitle="A" ChartOptions="_currentOptions" ChartSeries="_currentChart" Width="100%" Height="350px" TimeLabelSpacing="TimeSpan.FromMinutes(30)" />
+                                                    </MudItem>
+                                                    <MudItem xs="12">
+                                                        <MudTimeSeriesChart YAxisTitle="kWh" ChartOptions="_currentOptions" ChartSeries="_groupedData" Width="100%" Height="350px" TimeLabelSpacing="TimeSpan.FromMinutes(30)" />
                                                     </MudItem>
                                                 </MudGrid>
                                             }
