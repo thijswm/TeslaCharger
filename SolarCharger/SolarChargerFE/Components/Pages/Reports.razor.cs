@@ -25,6 +25,7 @@ namespace SolarChargerFE.Components.Pages
 
         private readonly List<TimeSeriesChartSeries> _groupedData = new();
         private TimeSeriesChartSeries _kwhCompensatedSeries = new();
+        private TimeSeriesChartSeries _kwhSeries = new();
 
         protected override async Task OnInitializedAsync()
         {
@@ -61,6 +62,14 @@ namespace SolarChargerFE.Components.Pages
             _kwhCompensatedSeries = new TimeSeriesChartSeries
             {
                 Index = 0,
+                Name = "kWh Compensated",
+                IsVisible = true,
+                LineDisplayType = LineDisplayType.Area
+            };
+
+            _kwhSeries = new TimeSeriesChartSeries
+            {
+                Index = 1,
                 Name = "kWh",
                 IsVisible = true,
                 LineDisplayType = LineDisplayType.Area
@@ -70,6 +79,7 @@ namespace SolarChargerFE.Components.Pages
             _powerChart.Add(_compensatedPowerSeries);
             _currentChart.Add(_currentSeries);
             _groupedData.Add(_kwhCompensatedSeries);
+            _groupedData.Add(_kwhSeries);
 
             try
             {
@@ -130,13 +140,14 @@ namespace SolarChargerFE.Components.Pages
                             .Select(a => new TimeSeriesChartSeries.TimeValue(a.Timestamp.LocalDateTime, a.Current))
                             .ToList();
 
-                        var compensatedGrouped = powerHistory
+                        var groupedData = powerHistory
                             .Where(a => a.CompensatedPower.HasValue)
                             .Select(a => new
                             {
                                 HourDate = a.Time.Date.AddHours(a.Time.Hour),
                                 TimeStamp = a.Time,
-                                CompensatedPower = a.CompensatedPower!.Value
+                                CompensatedPower = a.CompensatedPower!.Value,
+                                Power = a.Power
                             })
                             .GroupBy(a => a.HourDate)
                             .Select(a =>
@@ -144,7 +155,7 @@ namespace SolarChargerFE.Components.Pages
                                 var allTimes = a.Select(a => a.TimeStamp).ToList();
                                 var averageSeconds = CalculateAverageSecondsBetweenTimestamps(allTimes);
                                 var dt = averageSeconds / 3600.0;
-                                var energy = a.Sum(b =>
+                                var compensatedEnergy = a.Sum(b =>
                                 {
                                     var val = b.CompensatedPower;
                                     if (val < 0)
@@ -154,15 +165,28 @@ namespace SolarChargerFE.Components.Pages
 
                                     return val * dt / 1000;
                                 });
+
+                                var energy = a.Sum(b =>
+                                {
+                                    var val = b.Power;
+                                    if (val < 0)
+                                    {
+                                        val *= -1;
+                                    }
+                                    return val * dt / 1000;
+                                });
+
                                 return new
                                 {
                                     HourDate = a.Key,
-                                    Energy = energy,
-                                    AverageSeconds = averageSeconds
+                                    CompensatedEnergy = compensatedEnergy,
+                                    Energy = energy
                                 };
                             });
 
-                        _kwhCompensatedSeries.Data = compensatedGrouped.Select(a => new TimeSeriesChartSeries.TimeValue(a.HourDate, a.Energy)).ToList();
+                        _kwhCompensatedSeries.Data = groupedData.Select(a => new TimeSeriesChartSeries.TimeValue(a.HourDate, a.CompensatedEnergy)).ToList();
+                        _kwhSeries.Data = groupedData.Select(a => new TimeSeriesChartSeries.TimeValue(a.HourDate, a.CompensatedEnergy - a.Energy)).ToList();
+
                     }
                     catch (Exception exp)
                     {

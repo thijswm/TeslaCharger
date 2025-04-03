@@ -186,6 +186,7 @@ namespace SolarCharger
         {
             _stopRequested = false;
 
+            _currentChargeSession = null;
             _powerHistory.Clear();
             _compensatedHistory.Clear();
             _totalPowerHistory.Clear();
@@ -765,6 +766,9 @@ namespace SolarCharger
 
                     await AddVehicleData(LatestVehicleData);
                     await _hubService.SendVehicleDataAsync(LatestVehicleData);
+
+                    _currentChargeSession = null;
+                    LatestVehicleData = null;
                 }
             }
             catch (Exception exp)
