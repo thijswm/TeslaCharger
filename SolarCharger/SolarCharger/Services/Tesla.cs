@@ -11,15 +11,17 @@ namespace SolarCharger.Services
     public class Tesla : ITesla
     {
         private readonly ILogger<Tesla> _log;
+        private readonly HttpClient _httpClient;
         private readonly ChargeContext _chargeContext;
         private Settings? _settings;
         private Token? _currentToken;
 
-        public Tesla(ILogger<Tesla> log, ChargeContext chargeContext)
+        public Tesla(ILogger<Tesla> log, ChargeContext chargeContext, HttpClient httpClient)
         {
             _log = log;
             _chargeContext = chargeContext;
             CurrentChargingAmps = 0;
+            _httpClient = httpClient;
         }
 
         public int CurrentChargingAmps { get; set; }
@@ -58,17 +60,17 @@ namespace SolarCharger.Services
             }
 
             var url = $"{_settings!.TeslaCommandsAddress}/api/1/vehicles/{_settings.Vin}";
-            ResponseWrapper<Vehicle>? vehicle = await GetAndDeserializeAsync<ResponseWrapper<Vehicle>>(url, _currentToken.AccessToken);
-            if (vehicle?.Response == null)
+            Tuple<string, ResponseWrapper<Vehicle>?> vehicle = await GetAndDeserializeAsync<ResponseWrapper<Vehicle>>(url, _currentToken.AccessToken);
+            if (vehicle.Item2?.Response == null)
             {
                 throw new Exception("Failed to get vehicle information");
             }
 
-            return vehicle.Response;
+            return vehicle.Item2.Response;
         }
 
         // expensive call
-        public async Task<VehicleData> GetVehicleDataAsync()
+        public async Task<Tuple<string, VehicleData>> GetVehicleDataAsync()
         {
             if (_currentToken == null)
             {
@@ -76,17 +78,18 @@ namespace SolarCharger.Services
             }
 
             var url = $"{_settings!.TeslaCommandsAddress}/api/1/vehicles/{_settings.Vin}/vehicle_data";
-            ResponseWrapper<VehicleData>? vehicle = await GetAndDeserializeAsync<ResponseWrapper<VehicleData>>(url, _currentToken.AccessToken);
-            if (vehicle?.Response == null)
+            Tuple<string, ResponseWrapper<VehicleData>?> vehicle = await GetAndDeserializeAsync<ResponseWrapper<VehicleData>>(url, _currentToken.AccessToken);
+            if (vehicle.Item2?.Response == null)
             {
                 throw new Exception("Failed to get vehicle data");
             }
 
-            CurrentBatteryLevel = vehicle.Response.ChargeState!.BatteryLevel;
-            CurrentChargePower = vehicle.Response.ChargeState!.ChargePowerWatt;
-            CurrentChargeVoltage = CurrentChargePower > 0 ? vehicle.Response.ChargeState!.ChargerVoltage : 240;
+            CurrentBatteryLevel = vehicle.Item2.Response.ChargeState!.BatteryLevel;
+            CurrentChargePower = vehicle.Item2.Response.ChargeState!.ChargePowerWatt;
+            CurrentChargeVoltage = CurrentChargePower > 0 ? vehicle.Item2.Response.ChargeState!.ChargerVoltage : 240;
 
-            return vehicle.Response;
+            // we return the parsed response but also the raw response so we can do something with it in the future
+            return new Tuple<string, VehicleData>(vehicle.Item1, vehicle.Item2.Response);
         }
 
         public async Task SetChargeAmpsAsync(int amps)
@@ -223,19 +226,14 @@ namespace SolarCharger.Services
 
         public async Task<T?> PostAndDeserializeAsync<T>(string url, object payload, string? token = null)
         {
-            var handler = new HttpClientHandler
-            {
-                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
-            };
-            var httpClient = new HttpClient(handler);
             if (token != null)
             {
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             }
             var jsonPayload = JsonConvert.SerializeObject(payload);
             var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
-            var response = await httpClient.PostAsync(url, content);
+            var response = await _httpClient.PostAsync(url, content);
             response.EnsureSuccessStatusCode();
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
@@ -245,24 +243,18 @@ namespace SolarCharger.Services
             return result;
         }
 
-        public async Task<T?> GetAndDeserializeAsync<T>(string url, string? token = null)
+        public async Task<Tuple<string, T?>> GetAndDeserializeAsync<T>(string url, string? token = null)
         {
-            var handler = new HttpClientHandler
-            {
-                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
-            };
-
-            var httpClient = new HttpClient(handler);
             if (token != null)
             {
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             }
-            var response = await httpClient.GetAsync(url);
+            var response = await _httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
             var jsonResponse = await response.Content.ReadAsStringAsync();
             _log.LogInformation("Post for Url: '{Url}' has response: '{Response}'", url, jsonResponse);
             var result = JsonConvert.DeserializeObject<T>(jsonResponse);
-            return result;
+            return new Tuple<string, T?>(jsonResponse, result);
         }
     }
 }

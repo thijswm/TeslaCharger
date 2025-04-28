@@ -257,10 +257,11 @@ namespace SolarCharger
                 try
                 {
                     _log.LogInformation("Getting vehicle data");
-                    LatestVehicleData = await _tesla.GetVehicleDataAsync();
+                    var vehicleData = await _tesla.GetVehicleDataAsync();
+                    LatestVehicleData = vehicleData.Item2;
                     _log.LogInformation("Vehicle data: {Data}", LatestVehicleData);
 
-                    await AddVehicleData(LatestVehicleData);
+                    await AddVehicleData(vehicleData.Item1);
                     await _hubService.SendVehicleDataAsync(LatestVehicleData);
 
                     if (LatestVehicleData.ChargeState is { IsChargePortLatched: true })
@@ -537,10 +538,11 @@ namespace SolarCharger
             try
             {
                 // this will also update the vehicle charge power
-                LatestVehicleData = await _tesla.GetVehicleDataAsync();
+                var vehicleData = await _tesla.GetVehicleDataAsync();
+                LatestVehicleData = vehicleData.Item2;
                 _log.LogInformation("Vehicle data: {Data}", LatestVehicleData);
 
-                await AddVehicleData(LatestVehicleData);
+                await AddVehicleData(vehicleData.Item1);
                 await _hubService.SendVehicleDataAsync(LatestVehicleData);
             }
             catch (Exception ex)
@@ -727,8 +729,12 @@ namespace SolarCharger
             // and check for the battery level
             try
             {
-                LatestVehicleData = await _tesla.GetVehicleDataAsync();
+                var vehicleData = await _tesla.GetVehicleDataAsync();
+                LatestVehicleData = vehicleData.Item2;
                 _log.LogInformation("Vehicle data: {VehicleData}", LatestVehicleData);
+
+                await AddVehicleData(vehicleData.Item1);
+                await _hubService.SendVehicleDataAsync(LatestVehicleData);
             }
             catch (Exception exp)
             {
@@ -736,9 +742,6 @@ namespace SolarCharger
                 await _stateMachine.FireAsync(eTrigger.Error);
                 return true;
             }
-
-            await AddVehicleData(LatestVehicleData);
-            await _hubService.SendVehicleDataAsync(LatestVehicleData);
             return false;
         }
 
@@ -757,14 +760,15 @@ namespace SolarCharger
             {
                 if (_currentChargeSession != null)
                 {
-                    LatestVehicleData = await _tesla.GetVehicleDataAsync();
+                    var vehicleData = await _tesla.GetVehicleDataAsync();
+                    LatestVehicleData = vehicleData.Item2;
                     _currentChargeSession.End = DateTime.Now;
                     _currentChargeSession.BatteryLevelEnded = _tesla.CurrentBatteryLevel;
                     _currentChargeSession.EnergyAdded = LatestVehicleData.ChargeState?.ChargeEnergyAdded ?? 0 - _startChargeEnergyAdded;
 
                     await _chargeSessionService.UpdateChargeSessionAsync(_currentChargeSession);
 
-                    await AddVehicleData(LatestVehicleData);
+                    await AddVehicleData(vehicleData.Item1);
                     await _hubService.SendVehicleDataAsync(LatestVehicleData);
 
                     _currentChargeSession = null;
@@ -779,7 +783,7 @@ namespace SolarCharger
             await _stateMachine.FireAsync(eTrigger.StopChargeDone);
         }
 
-        private async Task AddVehicleData(VehicleData vehicleData)
+        private async Task AddVehicleData(string vehicleDataStr)
         {
             if (_currentChargeSession != null)
             {
@@ -791,7 +795,7 @@ namespace SolarCharger
                         ChargeSessionId = _currentChargeSession.Id,
                         ChargeSession = _currentChargeSession,
                         Timestamp = DateTime.Now,
-                        Data = JsonConvert.SerializeObject(vehicleData)
+                        Data = vehicleDataStr
                     };
                     await _chargeSessionService.AddVehicleDataLog(vehicleDataLog);
                 }

@@ -46,7 +46,7 @@ namespace SolarCharger.Services
             return true;
         }
 
-        public async Task<VehicleData> GetVehicleDataAsync()
+        public async Task<Tuple<string, VehicleData>> GetVehicleDataAsync()
         {
             await Task.Delay(100);
 
@@ -64,7 +64,7 @@ namespace SolarCharger.Services
                 }
             };
 
-            return vehicleData;
+            return new Tuple<string, VehicleData>("", vehicleData);
         }
 
         public async Task SetChargeAmpsAsync(int amps)

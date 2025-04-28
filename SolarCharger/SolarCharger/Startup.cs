@@ -23,6 +23,14 @@ namespace SolarCharger
             //services.AddScoped<ITesla, TeslaSimulator>();
             services.AddScoped<IHubService, HubService>();
             services.AddSingleton<IStateEngine, StateEngine>();
+            services.AddHttpClient<Tesla>()
+                .ConfigurePrimaryHttpMessageHandler(() =>
+                {
+                    return new HttpClientHandler
+                    {
+                        ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+                    };
+                });
             services.AddDbContext<ChargeContext, ChargeContext>();
 
             services.AddCors(options =>

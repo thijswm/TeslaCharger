@@ -10,7 +10,7 @@ namespace SolarCharger.Services
         int CurrentBatteryLevel { get; }
         Task StartAsync();
         Task<bool> IsOnlineAsync();
-        Task<VehicleData> GetVehicleDataAsync();
+        Task<Tuple<string, VehicleData>> GetVehicleDataAsync();
         Task SetChargeAmpsAsync(int amps);
         Task StartChargeAsync();
         Task StopChargeAsync();
