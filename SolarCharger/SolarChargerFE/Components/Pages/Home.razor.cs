@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.JSInterop;
 using MudBlazor;
+using MudBlazor.Charts;
 
 namespace SolarChargerFE.Components.Pages
 {
@@ -9,6 +11,8 @@ namespace SolarChargerFE.Components.Pages
         [Inject] public HubConnection _hubConnection { get; set; }
         [Inject] public SolarChargerClient _client { get; set; }
         [Inject] private ISnackbar _snackBar { get; set; }
+        [Inject] IJSRuntime JS { get; set; }
+
         private bool _loading;
         private string _loadError;
         private EState _currentState;
@@ -20,6 +24,10 @@ namespace SolarChargerFE.Components.Pages
         private readonly List<TimeSeriesChartSeries> _currentChart = new();
         private TimeSeriesChartSeries _currentSeries = new();
 
+        private const int MaxLogLines = 100;
+        private readonly Queue<string> _logLines = new();
+
+        private MudPaper _logPaperRef;
 
         protected override async Task OnInitializedAsync()
         {
@@ -37,6 +45,15 @@ namespace SolarChargerFE.Components.Pages
                 {
                     _currentVehicleData = vehicleData;
                     InvokeAsync(StateHasChanged);
+                });
+
+                _hubConnection.On<string>("Logging", async (logLine) =>
+                {
+                    if (_logLines.Count >= MaxLogLines)
+                        _logLines.Dequeue();
+                    _logLines.Enqueue(logLine);
+                    await InvokeAsync(StateHasChanged);
+                    await ScrollToBottomAsync();
                 });
 
                 _powerSeries = new TimeSeriesChartSeries
@@ -135,6 +152,11 @@ namespace SolarChargerFE.Components.Pages
         public async ValueTask DisposeAsync()
         {
             await _hubConnection.DisposeAsync();
+        }
+
+        private async Task ScrollToBottomAsync()
+        {
+            await JS.InvokeVoidAsync("scrollToEnd", _logPaperRef);
         }
     }
 }

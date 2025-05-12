@@ -29,5 +29,10 @@ namespace SolarCharger.Services
                 .Select(PowerHistoryViewModel.FromModel).ToList();
             return solarHub.Clients.All.SendAsync("PowerHistory", powerHistoryViewModel);
         }
+
+        public Task SendLoggingAsync(string logLine)
+        {
+            return solarHub.Clients.All.SendAsync("Logging", logLine);
+        }
     }
 }

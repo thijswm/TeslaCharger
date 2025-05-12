@@ -32,6 +32,7 @@ namespace SolarCharger
                     };
                 });
             services.AddDbContext<ChargeContext, ChargeContext>();
+            services.AddHostedService<Service>();
 
             services.AddCors(options =>
             {

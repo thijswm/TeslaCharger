@@ -7,5 +7,6 @@ namespace SolarCharger.Services
         Task SendStateChangedAsync(eState state);
         Task SendVehicleDataAsync(VehicleData data);
         Task SendLatestPowerHistoryAsync(List<PowerHistory> powerHistory);
+        Task SendLoggingAsync(string logLine);
     }
 }

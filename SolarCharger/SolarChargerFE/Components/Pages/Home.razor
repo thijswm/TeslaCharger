@@ -1,6 +1,23 @@
 ﻿@page "/"
 @inherits MudComponentBase
 <PageTitle>Charge Controller</PageTitle>
+<style>
+    .log-window {
+        height: 300px;
+        overflow-y: auto;
+        background: #222;
+        color: #eee;
+        font-family: "Fira Mono", "Consolas", monospace;
+        font-size: 0.95rem;
+        padding: 8px;
+        border-radius: 4px;
+    }
+</style>
+<script>
+    window.scrollToEnd = (element) => {
+        element.scrollTop = element.scrollHeight;
+    };
+</script>
 @if (_loading)
 {
     <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="100%" Height="60%" />
@@ -13,93 +30,123 @@ else
 {
     <MudGrid>
         <MudItem xs="12">
-            <MudText Typo="Typo.h6">Current State: @_currentState</MudText>
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h5">Charge Session</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudGrid>
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.h6">Current State: @_currentState</MudText>
+                        </MudItem>
+                        <MudItem xs="12">
+                            @if (_currentState == EState.Idle)
+                            {
+                                <MudButton Color="@Color.Primary" Variant="Variant.Filled" OnClick="StartChargingAsync">Start Charge Session</MudButton>
+                            }
+                            else
+                            {
+                                <MudGrid>
+                                    <MudItem xs="12">
+                                        <MudButton Color="@Color.Primary" Variant="Variant.Filled" OnClick="StopChargingAsync">Stop Charge Session</MudButton>
+                                    </MudItem>
+                                    <MudItem xs="12">
+                                        <MudText Typo="Typo.h5">Charging...</MudText>
+                                    </MudItem>
+                                    @if (_currentVehicleData != null)
+                                    {
+                                        <MudItem xs="12" sm="4">
+                                            <MudCard>
+                                                <MudCardHeader>
+                                                    <CardHeaderContent>
+                                                        <MudText Typo="Typo.h5">Power</MudText>
+                                                    </CardHeaderContent>
+                                                </MudCardHeader>
+                                                <MudCardContent>
+                                                    <MudStack Row="true">
+                                                        <MudText Typo="Typo.h6">@(_currentVehicleData.ChargerPower) kW</MudText>
+                                                        <MudIcon Icon="@Icons.Material.Filled.FlashOn"></MudIcon>
+                                                    </MudStack>
+                                                </MudCardContent>
+                                            </MudCard>
+                                        </MudItem>
+
+                                        <MudItem xs="12" sm="4">
+                                            <MudCard>
+                                                <MudCardHeader>
+                                                    <CardHeaderContent>
+                                                        <MudText Typo="Typo.h5">Energy Added</MudText>
+                                                    </CardHeaderContent>
+                                                </MudCardHeader>
+                                                <MudCardContent>
+                                                    <MudText Typo="Typo.h6">@(_currentVehicleData.ChargeEnergyAdded) kWh</MudText>
+                                                </MudCardContent>
+                                            </MudCard>
+                                        </MudItem>
+
+                                        <MudItem xs="12" sm="4">
+                                            <MudCard>
+                                                <MudCardHeader>
+                                                    <CardHeaderContent>
+                                                        <MudText Typo="Typo.h5">Current Energy</MudText>
+                                                    </CardHeaderContent>
+                                                </MudCardHeader>
+                                                <MudCardContent>
+                                                    <MudStack>
+                                                        <MudText Typo="Typo.h6">@(_currentVehicleData.ChargeAmps) A / @(_currentVehicleData.ChargeCurrentRequestMax) A</MudText>
+                                                        <MudText Typo="Typo.h6">@(_currentVehicleData.ChargerVoltage) V</MudText>
+                                                    </MudStack>
+                                                </MudCardContent>
+                                            </MudCard>
+                                        </MudItem>
+
+                                        <MudItem xs="10">
+                                            <MudProgressLinear Color="Color.Tertiary" Value="@(_currentVehicleData!.BatteryLevel)" Size="Size.Large" Striped="true" />
+                                        </MudItem>
+                                        <MudItem xs="2">
+                                            <MudText Typo="Typo.h6">@_currentVehicleData.BatteryLevel % / @_currentVehicleData.ChargeLimitSoc %</MudText>
+                                        </MudItem>
+                                    }
+
+
+                                    @if (_powerSeries.Data.Any())
+                                    {
+                                        <MudItem xs="12">
+                                            <MudTimeSeriesChart ChartSeries="_powerChart" Width="100%" Height="350px" TimeLabelSpacing="TimeSpan.FromMinutes(30)" />
+                                        </MudItem>
+                                    }
+
+                                    @if (_currentSeries.Data.Any())
+                                    {
+                                        <MudItem xs="12">
+                                            <MudTimeSeriesChart ChartSeries="_currentChart" Width="100%" Height="350px" TimeLabelSpacing="TimeSpan.FromMinutes(240)" />
+                                        </MudItem>
+                                    }
+                                </MudGrid>
+                            }
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
         </MudItem>
         <MudItem xs="12">
-            @if (_currentState == EState.Idle)
-            {
-                <MudButton Color="@Color.Primary" Variant="Variant.Filled" OnClick="StartChargingAsync">Start Charge Session</MudButton>
-            }
-            else
-            {
-                <MudGrid>
-                    <MudItem xs="12">
-                        <MudButton Color="@Color.Primary" Variant="Variant.Filled" OnClick="StopChargingAsync">Stop Charge Session</MudButton>
-                    </MudItem>
-                    <MudItem xs="12">
-                        <MudText Typo="Typo.h5">Charging...</MudText>
-                    </MudItem>
-                    @if (_currentVehicleData != null)
-                    {
-                        <MudItem xs="12" sm="4">
-                            <MudCard>
-                                <MudCardHeader>
-                                    <CardHeaderContent>
-                                        <MudText Typo="Typo.h5">Power</MudText>
-                                    </CardHeaderContent>
-                                </MudCardHeader>
-                                <MudCardContent>
-                                    <MudStack Row="true">
-                                        <MudText Typo="Typo.h6">@(_currentVehicleData.ChargerPower) kW</MudText>
-                                        <MudIcon Icon="@Icons.Material.Filled.FlashOn"></MudIcon>
-                                    </MudStack>
-                                </MudCardContent>
-                            </MudCard>
-                        </MudItem>
-
-                        <MudItem xs="12" sm="4">
-                            <MudCard>
-                                <MudCardHeader>
-                                    <CardHeaderContent>
-                                        <MudText Typo="Typo.h5">Energy Added</MudText>
-                                    </CardHeaderContent>
-                                </MudCardHeader>
-                                <MudCardContent>
-                                    <MudText Typo="Typo.h6">@(_currentVehicleData.ChargeEnergyAdded) kWh</MudText>
-                                </MudCardContent>
-                            </MudCard>
-                        </MudItem>
-
-                        <MudItem xs="12" sm="4">
-                            <MudCard>
-                                <MudCardHeader>
-                                    <CardHeaderContent>
-                                        <MudText Typo="Typo.h5">Current Energy</MudText>
-                                    </CardHeaderContent>
-                                </MudCardHeader>
-                                <MudCardContent>
-                                    <MudStack>
-                                        <MudText Typo="Typo.h6">@(_currentVehicleData.ChargeAmps) A / @(_currentVehicleData.ChargeCurrentRequestMax) A</MudText>
-                                        <MudText Typo="Typo.h6">@(_currentVehicleData.ChargerVoltage) V</MudText>
-                                    </MudStack>
-                                </MudCardContent>
-                            </MudCard>
-                        </MudItem>
-
-                        <MudItem xs="10">
-                            <MudProgressLinear Color="Color.Tertiary" Value="@(_currentVehicleData!.BatteryLevel)" Size="Size.Large" Striped="true" />
-                        </MudItem>
-                        <MudItem xs="2">
-                            <MudText Typo="Typo.h6">@_currentVehicleData.BatteryLevel % / @_currentVehicleData.ChargeLimitSoc %</MudText>
-                        </MudItem>
-                    }
-
-
-                    @if (_powerSeries.Data.Any())
-                    {
-                        <MudItem xs="12">
-                            <MudTimeSeriesChart ChartSeries="_powerChart" Width="100%" Height="350px" TimeLabelSpacing="TimeSpan.FromMinutes(30)" />
-                        </MudItem>
-                    }
-
-                    @if (_currentSeries.Data.Any())
-                    {
-                        <MudItem xs="12">
-                            <MudTimeSeriesChart ChartSeries="_currentChart" Width="100%" Height="350px" TimeLabelSpacing="TimeSpan.FromMinutes(240)" />
-                        </MudItem>
-                    }
-                </MudGrid>
-            }
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h5">Service Logging</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudPaper @ref="_logPaperRef" Class="log-window" Elevation="1">
+                        @foreach (var line in _logLines)
+                        {
+                            <div>@line</div>
+                        }
+                    </MudPaper>
+                </MudCardContent>
+            </MudCard>
         </MudItem>
     </MudGrid>
 }
